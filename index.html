@@ -184,7 +184,7 @@
         
         /* ステータスサマリー */
         .status-summary {
-            padding: 12px 0 0;
+            padding: 0;
             background: white;
             position: relative;
         }
@@ -203,7 +203,7 @@
             scrollbar-width: none;
             -ms-overflow-style: none;
             flex: 1;
-            padding: 0 16px;
+            padding: 8px 0 0 0;
         }
         
         .status-grid::-webkit-scrollbar {
@@ -232,6 +232,36 @@
             width: 20px;
             height: 20px;
             color: #6b7280;
+        }
+        
+        /* 施設選択 */
+        .facility-selector {
+            padding: 8px 16px;
+            background: white;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .facility-dropdown {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .facility-dropdown:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .facility-dropdown:hover {
+            border-color: #d1d5db;
         }
         
         .status-btn {
@@ -522,7 +552,7 @@
         
         /* 清掃グラフセクション */
         .graph-section {
-            background: linear-gradient(135deg, #bae6fd 0%, #7dd3fc 100%);
+            background: linear-gradient(135deg, #e6e6ff 0%, #cfd0ff 100%);
             color: #0c4a6e;
             margin: 0;
             overflow: hidden;
@@ -1470,6 +1500,15 @@
             </div>
         </div>
         
+        <!-- 施設選択 -->
+        <div class="facility-selector">
+            <select class="facility-dropdown" id="facilitySelect" onchange="changeFacility()">
+                <option value="demo-hotel-a">デモホテルA</option>
+                <option value="demo-hotel-b">デモホテルB</option>
+                <option value="demo-hotel-c">デモホテルC</option>
+            </select>
+        </div>
+
         <!-- 清掃グラフ -->
         <div class="graph-section">
             <div class="graph-header" onclick="toggleGraph()">
@@ -2061,6 +2100,14 @@
         function scrollStatusRight() {
             const statusGrid = document.getElementById('statusGrid');
             statusGrid.scrollBy({ left: 200, behavior: 'smooth' });
+        }
+        
+        // 施設変更
+        function changeFacility() {
+            const facilitySelect = document.getElementById('facilitySelect');
+            const selectedFacility = facilitySelect.value;
+            console.log('施設変更:', selectedFacility);
+            // 現在は何も変更しない（将来の拡張用）
         }
         
         // 日付更新
