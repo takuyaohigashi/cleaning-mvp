@@ -134,9 +134,10 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 12px;
+            padding: 6px 8px;
             font-weight: 500;
             position: relative;
+            min-width: auto;
         }
         
         .header-content {
@@ -1398,7 +1399,7 @@
                         </svg>
                     </button>
                     <div class="date-display">
-                        <span id="currentDate">2025年08月07日(木)</span>
+                        <span id="currentDate">8月7日</span>
                         <button onclick="showCalendar()" style="background: none; border: none; cursor: pointer; padding: 4px;">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -2024,12 +2025,9 @@
         
         // 日付更新
         function updateDate() {
-            const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-            const year = currentDate.getFullYear();
-            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-            const day = String(currentDate.getDate()).padStart(2, '0');
-            const weekday = weekdays[currentDate.getDay()];
-            document.getElementById('currentDate').textContent = `${year}年${month}月${day}日(${weekday})`;
+            const month = currentDate.getMonth() + 1;
+            const day = currentDate.getDate();
+            document.getElementById('currentDate').textContent = `${month}月${day}日`;
         }
         
         // カウント更新
