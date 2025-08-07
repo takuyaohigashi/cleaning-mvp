@@ -184,21 +184,54 @@
         
         /* ステータスサマリー */
         .status-summary {
-            padding: 12px 16px 0;
+            padding: 12px 0 0;
             background: white;
+            position: relative;
+        }
+        
+        .status-scroll-container {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
         }
         
         .status-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            display: flex;
             gap: 6px;
-            margin-bottom: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            flex: 1;
+            padding: 0 16px;
         }
         
-        .status-grid-2col {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
+        .status-grid::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .scroll-arrow {
+            width: 24px;
+            height: 40px;
+            background: none;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: opacity 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .scroll-arrow:hover {
+            opacity: 0.7;
+        }
+        
+        .scroll-arrow svg {
+            width: 20px;
+            height: 20px;
+            color: #6b7280;
         }
         
         .status-btn {
@@ -212,10 +245,12 @@
             transition: all 0.2s;
             text-align: center;
             min-height: 40px;
+            min-width: 80px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            flex-shrink: 0;
         }
         
         .status-content {
@@ -849,17 +884,15 @@
         
         .room-type {
             font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background: #e5e7eb;
             color: #4b5563;
             font-weight: 500;
         }
         
         .room-status {
-            padding: 2px 8px;
-            font-size: 12px;
-            border-radius: 4px;
+            padding: 4px 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 6px;
         }
         
         .room-status.unused {
@@ -898,6 +931,24 @@
         
         .icon-purple {
             color: #7c3aed;
+        }
+        
+        .room-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .tag-blue {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .tag-purple {
+            background: #fecaca;
+            color: #dc2626;
         }
         
         .room-controls {
@@ -1419,38 +1470,6 @@
             </div>
         </div>
         
-<!-- 清掃指示 -->
-        <div class="ai-route-section">
-            <div class="ai-route-header" onclick="toggleAIRoute()">
-                <div class="ai-route-title">
-                    <svg class="ai-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                    <span>清掃指示</span>
-                </div>
-                <svg class="toggle-icon" id="aiToggleIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-            </div>
-            <div class="ai-route-content" id="aiRouteContent">
-                <div class="route-info">
-                    <div class="route-stats">
-                        <div class="stat-item">
-                            <div class="stat-label">推定完了時刻</div>
-                            <div class="stat-value" id="estimatedTime">11:45</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">総所要時間</div>
-                            <div class="stat-value" id="totalTime">2時間15分</div>
-                        </div>
-                    </div>
-                    <div class="route-list" id="routeList">
-                        <!-- 動的に生成 -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        
         <!-- 清掃グラフ -->
         <div class="graph-section">
             <div class="graph-header" onclick="toggleGraph()">
@@ -1486,50 +1505,60 @@
 
         <!-- ステータスサマリー -->
         <div class="status-summary">
-            <div class="status-grid">
-                <button class="status-btn" onclick="filterByStatus('未清掃')" id="filter-未清掃">
-                    <div class="status-content">
-                        <span>未清掃</span>
-                        <span class="status-count" id="count-未清掃">4</span>
-                    </div>
+            <div class="status-scroll-container">
+                <button class="scroll-arrow left" onclick="scrollStatusLeft()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
                 </button>
-                <button class="status-btn" onclick="filterByStatus('清掃済')" id="filter-清掃済">
-                    <div class="status-content">
-                        <span>清掃済</span>
-                        <span class="status-count" id="count-清掃済">3</span>
-                    </div>
-                </button>
-                <button class="status-btn" onclick="filterByStatus('点検済')" id="filter-点検済">
-                    <div class="status-content">
-                        <span>点検済</span>
-                        <span class="status-count" id="count-点検済">2</span>
-                    </div>
-                </button>
-                <button class="status-btn" onclick="filterByStatus('DD')" id="filter-DD">
-                    <div class="status-content">
-                        <span>DD</span>
-                        <span class="status-count" id="count-DD">2</span>
-                    </div>
-                </button>
-                <button class="status-btn" onclick="filterByStatus('清掃不要')" id="filter-清掃不要">
-                    <div class="status-content">
-                        <span>清掃不要</span>
-                        <span class="status-count" id="count-清掃不要">2</span>
-                    </div>
-                </button>
-            </div>
-            <div class="status-grid-2col">
-                <button class="status-btn" onclick="filterByStatus('early')" id="filter-early">
-                    <div class="status-content">
-                        <span>アーリー</span>
-                        <span class="status-count" id="count-early">2</span>
-                    </div>
-                </button>
-                <button class="status-btn" onclick="filterByStatus('late')" id="filter-late">
-                    <div class="status-content">
-                        <span>レイト</span>
-                        <span class="status-count" id="count-late">2</span>
-                    </div>
+                <div class="status-grid" id="statusGrid">
+                    <button class="status-btn" onclick="filterByStatus('未清掃')" id="filter-未清掃">
+                        <div class="status-content">
+                            <span>未清掃</span>
+                            <span class="status-count" id="count-未清掃">4</span>
+                        </div>
+                    </button>
+                    <button class="status-btn" onclick="filterByStatus('清掃済')" id="filter-清掃済">
+                        <div class="status-content">
+                            <span>清掃済</span>
+                            <span class="status-count" id="count-清掃済">3</span>
+                        </div>
+                    </button>
+                    <button class="status-btn" onclick="filterByStatus('点検済')" id="filter-点検済">
+                        <div class="status-content">
+                            <span>点検済</span>
+                            <span class="status-count" id="count-点検済">2</span>
+                        </div>
+                    </button>
+                    <button class="status-btn" onclick="filterByStatus('DD')" id="filter-DD">
+                        <div class="status-content">
+                            <span>DD</span>
+                            <span class="status-count" id="count-DD">2</span>
+                        </div>
+                    </button>
+                    <button class="status-btn" onclick="filterByStatus('清掃不要')" id="filter-清掃不要">
+                        <div class="status-content">
+                            <span>清掃不要</span>
+                            <span class="status-count" id="count-清掃不要">2</span>
+                        </div>
+                    </button>
+                    <button class="status-btn" onclick="filterByStatus('early')" id="filter-early">
+                        <div class="status-content">
+                            <span>アーリー</span>
+                            <span class="status-count" id="count-early">2</span>
+                        </div>
+                    </button>
+                    <button class="status-btn" onclick="filterByStatus('late')" id="filter-late">
+                        <div class="status-content">
+                            <span>レイト</span>
+                            <span class="status-count" id="count-late">2</span>
+                        </div>
+                    </button>
+                </div>
+                <button class="scroll-arrow right" onclick="scrollStatusRight()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
                 </button>
             </div>
         </div>
@@ -1649,10 +1678,6 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">部屋ステータス</label>
-                    <div class="form-static" id="detailRoomStatus"></div>
-                </div>
-                <div class="form-group">
                     <label class="form-label">清掃ステータス</label>
                     <select class="form-select" id="detailCleaningStatus">
                         <option value="未清掃">未清掃</option>
@@ -1661,6 +1686,10 @@
                         <option value="DD">DD</option>
                         <option value="清掃不要">清掃不要</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">部屋ステータス</label>
+                    <div class="form-static" id="detailRoomStatus"></div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">清掃者</label>
@@ -2023,6 +2052,17 @@
             updateSortButtons(); // ソートボタンの初期状態を設定
         }
         
+        // ステータスボタンのスクロール機能
+        function scrollStatusLeft() {
+            const statusGrid = document.getElementById('statusGrid');
+            statusGrid.scrollBy({ left: -200, behavior: 'smooth' });
+        }
+        
+        function scrollStatusRight() {
+            const statusGrid = document.getElementById('statusGrid');
+            statusGrid.scrollBy({ left: 200, behavior: 'smooth' });
+        }
+        
         // 日付更新
         function updateDate() {
             const month = currentDate.getMonth() + 1;
@@ -2120,11 +2160,10 @@
                             <div class="room-info">
                                 <span class="room-number">${room.number}</span>
                                 <span class="room-type">${room.roomType}</span>
-                                <span class="room-status ${statusClass}">${room.roomStatus}</span>
                             </div>
                             <div class="room-icons">
-                                ${room.earlyCheckIn ? '<svg class="icon icon-blue" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>' : ''}
-                                ${room.lateCheckOut ? '<svg class="icon icon-purple" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9.5H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd"></path></svg>' : ''}
+                                ${room.earlyCheckIn ? '<span class="room-tag tag-blue">アーリーC/I</span>' : ''}
+                                ${room.lateCheckOut ? '<span class="room-tag tag-purple">レイトC/O</span>' : ''}
                             </div>
                         </div>
                         ${timeInfoHtml}
@@ -2136,6 +2175,7 @@
                                 <option value="DD" ${room.cleaningStatus === 'DD' ? 'selected' : ''}>DD</option>
                                 <option value="清掃不要" ${room.cleaningStatus === '清掃不要' ? 'selected' : ''}>清掃不要</option>
                             </select>
+                            <span class="room-status ${statusClass}">${room.roomStatus}</span>
                             <select class="select" onclick="event.stopPropagation()" onchange="confirmCleanerChange(${room.id}, this.value)">
                                 <option value="" ${!room.cleanerName ? 'selected' : ''}>担当者未定</option>
                                 <option value="田中" ${room.cleanerName === '田中' ? 'selected' : ''}>田中</option>
