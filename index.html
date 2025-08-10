@@ -1997,9 +1997,9 @@
         
         const STATUS_CLASS_MAP = {
             '未使用': 'unused',
-            'CI前': 'before-ci',
+            'C/I前': 'before-ci',
             '滞在中': 'staying',
-            'CO済': 'after-co'
+            'C/O済': 'after-co'
         };
         
         const CLEANING_CLASS_MAP = {
@@ -2039,7 +2039,7 @@
         function generateRooms(hotelType, floors, roomsPerFloor) {
             const rooms = [];
             const roomTypes = ['シングル', 'ダブル', 'ツイン', 'スイート'];
-            const roomStatuses = ['未使用', 'CI前', '滞在中', 'CO済'];
+            const roomStatuses = ['未使用', 'C/I前', '滞在中', 'C/O済'];
             const cleaningStatuses = ['未清掃', '清掃済', '点検済', 'DD', '清掃不要'];
             const cleaners = hotelData[hotelType].cleaners;
             
@@ -2068,10 +2068,10 @@
                     const lateCheckOut = Math.random() < 0.3;
                     let checkInTime = '', checkOutTime = '';
                     
-                    if (roomStatus === 'CI前' || roomStatus === '滞在中') {
+                    if (roomStatus === 'C/O前' || roomStatus === '滞在中') {
                         checkInTime = earlyCheckIn ? '13:00' : '15:00';
                     }
-                    if (roomStatus === 'CO済' || roomStatus === '滞在中') {
+                    if (roomStatus === 'C/O済' || roomStatus === '滞在中') {
                         const hours = lateCheckOut ? 12 : Math.floor(Math.random() * 3) + 9;
                         const minutes = Math.floor(Math.random() * 6) * 10;
                         checkOutTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
@@ -2414,7 +2414,7 @@
             const timeDisplayItems = [];
             
             // C/I表示
-            const hasCheckIn = room.checkInTime && (room.roomStatus === 'CI前' || room.roomStatus === 'CO済');
+            const hasCheckIn = room.checkInTime && (room.roomStatus === 'C/I前' || room.roomStatus === 'C/O済');
             const earlyTag = room.earlyCheckIn ? '<span class="room-tag tag-blue">アーリー</span>' : '';
             const checkInTime = hasCheckIn ? room.checkInTime : '-';
             timeDisplayItems.push(`<div class="time-display-row">
@@ -2424,7 +2424,7 @@
             </div>`);
             
             // C/O表示
-            const hasCheckOut = room.checkOutTime && (room.roomStatus === 'CO済' || room.roomStatus === '滞在中' || room.roomStatus === 'CI前');
+            const hasCheckOut = room.checkOutTime && (room.roomStatus === 'C/O済' || room.roomStatus === '滞在中' || room.roomStatus === 'C/I前');
             const lateTag = room.lateCheckOut ? '<span class="room-tag tag-purple">レイト</span>' : '';
             const checkOutTime = hasCheckOut ? room.checkOutTime : '-';
             timeDisplayItems.push(`<div class="time-display-row">
@@ -2476,9 +2476,11 @@
                 filteredRooms = filteredRooms.filter(room => {
                     return activeFilters.some(filter => {
                         if (filter === 'early') {
-                            return room.earlyCheckIn;
+                            // アーリーは予約がある部屋（未使用以外）でアーリーチェックインのもの
+                            return room.earlyCheckIn && room.roomStatus !== '未使用';
                         } else if (filter === 'late') {
-                            return room.lateCheckOut;
+                            // レイトは予約がある部屋（未使用以外）でレイトチェックアウトのもの
+                            return room.lateCheckOut && room.roomStatus !== '未使用';
                         } else {
                             return room.cleaningStatus === filter;
                         }
@@ -2529,11 +2531,11 @@
                 let cleaningActionsHtml = '';
                 if (currentUser === 'cleaner') {
                     const showStartBtn = room.cleaningStatus === '未清掃' && 
-                                       (room.roomStatus === 'CO済' || room.roomStatus === '未使用') &&
+                                       (room.roomStatus === 'C/O済' || room.roomStatus === '未使用') &&
                                        !room.isCleaningInProgress;
                     const showEndBtn = room.isCleaningInProgress;  // 清掃中なら終了ボタンを表示
                     const showResetBtn = room.cleaningStatus === '清掃済' && 
-                                        (room.roomStatus === 'CO済' || room.roomStatus === '未使用') &&
+                                        (room.roomStatus === 'C/O済' || room.roomStatus === '未使用') &&
                                         !room.isCleaningInProgress;  // 清掃済みなら未清掃に戻すボタンを表示
                     
                     if (showStartBtn || showEndBtn || showResetBtn) {
@@ -2647,13 +2649,20 @@
             const btn = document.getElementById(`filter-${status}`);
             const index = activeFilters.indexOf(status);
             
+            // まず全てのフィルターボタンをリセット
+            Object.keys(buttons).forEach(filterStatus => {
+                const filterBtn = document.getElementById(`filter-${filterStatus}`);
+                if (filterBtn) {
+                    filterBtn.className = 'status-btn';
+                }
+            });
+            
             if (index > -1) {
-                // 既に選択されている場合は削除
-                activeFilters.splice(index, 1);
-                btn.className = 'status-btn';
+                // 既に選択されている場合は削除（全フィルターを解除）
+                activeFilters = [];
             } else {
-                // 選択されていない場合は追加
-                activeFilters.push(status);
+                // 新しいフィルターを単独で設定
+                activeFilters = [status];
                 btn.classList.add(buttons[status]);
             }
             
