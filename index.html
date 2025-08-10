@@ -1975,7 +1975,7 @@
     <div class="modal" id="roomDetailModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">部屋 <span id="detailRoomNumber"></span></h3>
+                <h3 class="modal-title"><span id="detailRoomNumber"></span></h3>
                 <button class="modal-close" onclick="closeRoomDetail()">
                     <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -2688,10 +2688,9 @@
                                  <div class="control-item">
                                     <select class="select" onclick="event.stopPropagation()" onchange="confirmCleanerChange(${room.id}, this.value)">
                                         <option value="" ${!room.cleanerName ? 'selected' : ''}>担当者未定</option>
-                                        <option value="田中" ${room.cleanerName === '田中' ? 'selected' : ''}>田中</option>
-                                        <option value="佐藤" ${room.cleanerName === '佐藤' ? 'selected' : ''}>佐藤</option>
-                                        <option value="鈴木" ${room.cleanerName === '鈴木' ? 'selected' : ''}>鈴木</option>
-                                        <option value="山田" ${room.cleanerName === '山田' ? 'selected' : ''}>山田</option>
+                                        ${hotelData[currentHotel].cleaners.map(cleaner => 
+                                            `<option value="${cleaner}" ${room.cleanerName === cleaner ? 'selected' : ''}>${cleaner}</option>`
+                                        ).join('')}
                                     </select>
                                  </div>`
                             }
@@ -2882,7 +2881,18 @@
         }
         
         function cancelChange() {
-            renderRooms();
+            // 変更をキャンセル時は、select要素を元の値に戻す
+            if (pendingChange && pendingChange.field) {
+                const selectElements = document.querySelectorAll(`select[onchange*="${pendingChange.room.id}"]`);
+                selectElements.forEach(select => {
+                    if (pendingChange.field === 'cleaningStatus' && select.onchange.toString().includes('confirmCleaningStatusChange')) {
+                        select.value = pendingChange.oldValue;
+                    } else if (pendingChange.field === 'cleanerName' && select.onchange.toString().includes('confirmCleanerChange')) {
+                        select.value = pendingChange.oldValue || '';
+                    }
+                });
+            }
+            
             document.getElementById('confirmModal').classList.remove('active');
             document.body.style.overflow = ''; // 背景スクロールを復活
             pendingChange = null;
