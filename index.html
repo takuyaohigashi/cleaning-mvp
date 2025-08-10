@@ -1920,19 +1920,19 @@
         let graphOpen = false;
         
         const rooms = [
-            { id: 101, number: '101', floor: 1, roomType: 'シングル', roomStatus: '未使用', cleaningStatus: '清掃済', cleanerName: '田中', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '', memo: '', lostItem: '' },
-            { id: 102, number: '102', floor: 1, roomType: 'ダブル', roomStatus: 'CI前', cleaningStatus: '点検済', cleanerName: '佐藤', earlyCheckIn: true, lateCheckOut: false, checkInTime: '15:00', checkOutTime: '', memo: '', lostItem: '' },
-            { id: 103, number: '103', floor: 1, roomType: 'ツイン', roomStatus: '滞在中', cleaningStatus: '清掃不要', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '' },
-            { id: 201, number: '201', floor: 2, roomType: 'シングル', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: false, lateCheckOut: true, checkInTime: '', checkOutTime: '12:00', memo: '', lostItem: '' },
-            { id: 202, number: '202', floor: 2, roomType: 'ダブル', roomStatus: '滞在中', cleaningStatus: 'DD', cleanerName: '鈴木', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '' },
-            { id: 203, number: '203', floor: 2, roomType: 'スイート', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '10:30', memo: '', lostItem: '' },
-            { id: 301, number: '301', floor: 3, roomType: 'シングル', roomStatus: 'CI前', cleaningStatus: '清掃済', cleanerName: '山田', earlyCheckIn: false, lateCheckOut: false, checkInTime: '15:00', checkOutTime: '', memo: '', lostItem: '' },
-            { id: 302, number: '302', floor: 3, roomType: 'ツイン', roomStatus: '滞在中', cleaningStatus: '清掃不要', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '' },
-            { id: 303, number: '303', floor: 3, roomType: 'ダブル', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '10:45', memo: '', lostItem: '' },
-            { id: 401, number: '401', floor: 4, roomType: 'スイート', roomStatus: '未使用', cleaningStatus: '点検済', cleanerName: '田中', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '', memo: '', lostItem: '' },
-            { id: 402, number: '402', floor: 4, roomType: 'シングル', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: true, lateCheckOut: false, checkInTime: '13:00', checkOutTime: '09:30', memo: '', lostItem: '' },
-            { id: 501, number: '501', floor: 5, roomType: 'ダブル', roomStatus: 'CI前', cleaningStatus: 'DD', cleanerName: '', earlyCheckIn: false, lateCheckOut: true, checkInTime: '15:00', checkOutTime: '12:30', memo: '', lostItem: '' },
-            { id: 502, number: '502', floor: 5, roomType: 'ツイン', roomStatus: '滞在中', cleaningStatus: '清掃済', cleanerName: '佐藤', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '' },
+            { id: 101, number: '101', floor: 1, roomType: 'シングル', roomStatus: '未使用', cleaningStatus: '清掃済', cleanerName: '田中', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 102, number: '102', floor: 1, roomType: 'ダブル', roomStatus: 'CI前', cleaningStatus: '点検済', cleanerName: '佐藤', earlyCheckIn: true, lateCheckOut: false, checkInTime: '15:00', checkOutTime: '', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 103, number: '103', floor: 1, roomType: 'ツイン', roomStatus: '滞在中', cleaningStatus: '清掃不要', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 201, number: '201', floor: 2, roomType: 'シングル', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: false, lateCheckOut: true, checkInTime: '', checkOutTime: '12:00', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 202, number: '202', floor: 2, roomType: 'ダブル', roomStatus: '滞在中', cleaningStatus: 'DD', cleanerName: '鈴木', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 203, number: '203', floor: 2, roomType: 'スイート', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '10:30', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 301, number: '301', floor: 3, roomType: 'シングル', roomStatus: 'CI前', cleaningStatus: '清掃済', cleanerName: '山田', earlyCheckIn: false, lateCheckOut: false, checkInTime: '15:00', checkOutTime: '', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 302, number: '302', floor: 3, roomType: 'ツイン', roomStatus: '滞在中', cleaningStatus: '清掃不要', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 303, number: '303', floor: 3, roomType: 'ダブル', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '10:45', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 401, number: '401', floor: 4, roomType: 'スイート', roomStatus: '未使用', cleaningStatus: '点検済', cleanerName: '田中', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 402, number: '402', floor: 4, roomType: 'シングル', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: true, lateCheckOut: false, checkInTime: '13:00', checkOutTime: '09:30', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 501, number: '501', floor: 5, roomType: 'ダブル', roomStatus: 'CI前', cleaningStatus: 'DD', cleanerName: '', earlyCheckIn: false, lateCheckOut: true, checkInTime: '15:00', checkOutTime: '12:30', memo: '', lostItem: '', isCleaningInProgress: false },
+            { id: 502, number: '502', floor: 5, roomType: 'ツイン', roomStatus: '滞在中', cleaningStatus: '清掃済', cleanerName: '佐藤', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '', isCleaningInProgress: false },
         ];
         
         // 週間データ（デモ用）
@@ -2358,8 +2358,9 @@
                 let cleaningActionsHtml = '';
                 if (currentUser === 'cleaner') {
                     const showStartBtn = room.cleaningStatus === '未清掃' && 
-                                       (room.roomStatus === 'CO済' || room.roomStatus === '未使用');
-                    const showEndBtn = room.cleaningStatus === '清掃済' && room.cleanerName;
+                                       (room.roomStatus === 'CO済' || room.roomStatus === '未使用') &&
+                                       !room.isCleaningInProgress;
+                    const showEndBtn = room.isCleaningInProgress;  // 清掃中なら終了ボタンを表示
                     
                     if (showStartBtn || showEndBtn) {
                         cleaningActionsHtml = `
@@ -2574,17 +2575,17 @@
             const room = rooms.find(r => r.id === roomId);
             if (room && currentUser === 'cleaner') {
                 // 清掃開始時の処理
-                room.cleaningStatus = '清掃済';
+                room.isCleaningInProgress = true;  // 清掃中フラグを立てる
+                // 清掃ステータスはまだ変更しない
+                
                 // 実際の実装では現在のログインユーザー名を使用
                 // ここでは既に設定されている名前があればそのまま、なければ空のまま
                 if (!room.cleanerName) {
                     room.cleanerName = ''; // 担当者未定のまま
                 }
                 
-                // カウント更新
-                updateCounts();
+                // カウント更新は不要（ステータス変更していないため）
                 renderRooms();
-                renderAIRoute();
                 
                 console.log(`部屋${room.number}の清掃を開始しました`);
             }
@@ -2594,7 +2595,8 @@
             const room = rooms.find(r => r.id === roomId);
             if (room && currentUser === 'cleaner') {
                 // 清掃終了時の処理
-                room.cleaningStatus = '点検済';
+                room.cleaningStatus = '清掃済';
+                room.isCleaningInProgress = false;  // 清掃中フラグを下げる
                 
                 // カウント更新
                 updateCounts();
