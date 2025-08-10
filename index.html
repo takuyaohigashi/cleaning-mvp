@@ -770,7 +770,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 16px;
+            padding: 8px 16px 8px 0;
             background: white;
             border-bottom: 1px solid #e5e7eb;
         }
@@ -778,12 +778,61 @@
         .filter-controls {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 8px;
+        }
+        
+        .floor-buttons-container {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            max-width: 220px; /* フロアボタンの表示幅 */
+        }
+        
+        .right-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto; /* 右端に寄せる */
         }
         
         .floor-buttons {
             display: flex;
             gap: 4px;
+            overflow-x: auto;
+            padding: 0 16px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE */
+            flex: 1;
+        }
+        
+        .floor-buttons::-webkit-scrollbar {
+            display: none; /* Chrome, Safari */
+        }
+        
+        .floor-arrow {
+            width: 20px;
+            height: 32px;
+            background: none;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            flex-shrink: 0; /* 矢印のサイズを固定 */
+        }
+        
+        .floor-arrow:hover {
+            opacity: 0.7;
+        }
+        
+        .floor-arrow svg {
+            width: 16px;
+            height: 16px;
+            color: #6b7280;
         }
         
         .floor-btn {
@@ -797,6 +846,7 @@
             cursor: pointer;
             transition: all 0.2s;
             min-width: 35px;
+            flex-shrink: 0; /* フロアボタンのサイズを固定 */
         }
         
         .sort-buttons {
@@ -1632,9 +1682,9 @@
             <div class="selector-row">
                 <div class="selector-half">
                     <select class="facility-dropdown" id="facilitySelect" onchange="changeFacility()">
-                        <option value="demo-hotel-a">デモホテルA</option>
-                        <option value="demo-hotel-b">デモホテルB</option>
-                        <option value="demo-hotel-c">デモホテルC</option>
+                        <option value="small">小規模ホテル</option>
+                        <option value="medium">中規模ホテル</option>
+                        <option value="large">大規模ホテル</option>
                     </select>
                 </div>
                 <div class="selector-half">
@@ -1736,33 +1786,43 @@
             <!-- フィルターバー -->
             <div class="filter-bar">
                 <div class="filter-controls">
-                    <div class="floor-buttons">
-                        <button class="floor-btn" onclick="toggleFloor(1)" id="floor-1">1F</button>
-                        <button class="floor-btn" onclick="toggleFloor(2)" id="floor-2">2F</button>
-                        <button class="floor-btn" onclick="toggleFloor(3)" id="floor-3">3F</button>
-                        <button class="floor-btn" onclick="toggleFloor(4)" id="floor-4">4F</button>
-                        <button class="floor-btn" onclick="toggleFloor(5)" id="floor-5">5F</button>
-                    </div>
-                    <div class="sort-buttons">
-                        <button class="sort-btn" onclick="toggleSort('room')" id="sort-room">
-                            <span>No</span>
-                            <svg class="sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="sort-room-icon">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                    <div class="floor-buttons-container">
+                        <button class="floor-arrow left" onclick="scrollFloorsLeft()" id="floorArrowLeft" style="display: none;">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                             </svg>
-                    </button>
-                    <button class="sort-btn" onclick="toggleSort('type')" id="sort-type">
-                        <span>Type</span>
-                        <svg class="sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="sort-type-icon">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
-                        </svg>
+                        </button>
+                        <div class="floor-buttons" id="floorButtons">
+                            <!-- フロアボタンはJavaScriptで動的に生成 -->
+                        </div>
+                        <button class="floor-arrow right" onclick="scrollFloorsRight()" id="floorArrowRight" style="display: none;">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="right-controls">
+                        <div class="sort-buttons">
+                            <button class="sort-btn" onclick="toggleSort('room')" id="sort-room">
+                                <span>No</span>
+                                <svg class="sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="sort-room-icon">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                                </svg>
+                            </button>
+                            <button class="sort-btn" onclick="toggleSort('type')" id="sort-type">
+                                <span>Type</span>
+                                <svg class="sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="sort-type-icon">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="calendar-btn" onclick="toggleWeeklyCalendar()">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
                         </button>
                     </div>
                 </div>
-                <button class="calendar-btn" onclick="toggleWeeklyCalendar()">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                </button>
             </div>
         </div>
         
@@ -1951,21 +2011,106 @@
             '清掃不要': 'cleaning-gray'
         };
         
-        const rooms = [
-            { id: 101, number: '101', floor: 1, roomType: 'シングル', roomStatus: '未使用', cleaningStatus: '清掃済', cleanerName: '田中', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 102, number: '102', floor: 1, roomType: 'ダブル', roomStatus: 'CI前', cleaningStatus: '点検済', cleanerName: '佐藤', earlyCheckIn: true, lateCheckOut: false, checkInTime: '15:00', checkOutTime: '', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 103, number: '103', floor: 1, roomType: 'ツイン', roomStatus: '滞在中', cleaningStatus: '清掃不要', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 201, number: '201', floor: 2, roomType: 'シングル', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: false, lateCheckOut: true, checkInTime: '', checkOutTime: '12:00', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 202, number: '202', floor: 2, roomType: 'ダブル', roomStatus: '滞在中', cleaningStatus: 'DD', cleanerName: '鈴木', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 203, number: '203', floor: 2, roomType: 'スイート', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '10:30', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 301, number: '301', floor: 3, roomType: 'シングル', roomStatus: 'CI前', cleaningStatus: '清掃済', cleanerName: '山田', earlyCheckIn: false, lateCheckOut: false, checkInTime: '15:00', checkOutTime: '', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 302, number: '302', floor: 3, roomType: 'ツイン', roomStatus: '滞在中', cleaningStatus: '清掃不要', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 303, number: '303', floor: 3, roomType: 'ダブル', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '10:45', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 401, number: '401', floor: 4, roomType: 'スイート', roomStatus: '未使用', cleaningStatus: '点検済', cleanerName: '田中', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 402, number: '402', floor: 4, roomType: 'シングル', roomStatus: 'CO済', cleaningStatus: '未清掃', cleanerName: '', earlyCheckIn: true, lateCheckOut: false, checkInTime: '13:00', checkOutTime: '09:30', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 501, number: '501', floor: 5, roomType: 'ダブル', roomStatus: 'CI前', cleaningStatus: 'DD', cleanerName: '', earlyCheckIn: false, lateCheckOut: true, checkInTime: '15:00', checkOutTime: '12:30', memo: '', lostItem: '', isCleaningInProgress: false },
-            { id: 502, number: '502', floor: 5, roomType: 'ツイン', roomStatus: '滞在中', cleaningStatus: '清掃済', cleanerName: '佐藤', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '11:00', memo: '', lostItem: '', isCleaningInProgress: false },
-        ];
+        // ホテル基本情報
+        const hotelData = {
+            small: {
+                name: '小規模ホテル',
+                floors: 5,
+                roomsPerFloor: 10,
+                rooms: [],
+                cleaners: ['田中', '佐藤', '鈴木']
+            },
+            medium: {
+                name: '中規模ホテル',
+                floors: 10,
+                roomsPerFloor: 20,
+                rooms: [],
+                cleaners: ['田中', '佐藤', '鈴木', '山田', '伊藤', '高橋']
+            },
+            large: {
+                name: '大規模ホテル',
+                floors: 15,
+                roomsPerFloor: 30,
+                rooms: [],
+                cleaners: ['田中', '佐藤', '鈴木', '山田', '伊藤', '高橋', '中村', '小林', '加藤']
+            }
+        };
+        
+        // ホテルの部屋データを生成する関数
+        function generateRooms(hotelType, floors, roomsPerFloor) {
+            const rooms = [];
+            const roomTypes = ['シングル', 'ダブル', 'ツイン', 'スイート'];
+            const roomStatuses = ['未使用', 'CI前', '滞在中', 'CO済'];
+            const cleaningStatuses = ['未清掃', '清掃済', '点検済', 'DD', '清掃不要'];
+            const cleaners = hotelData[hotelType].cleaners;
+            
+            for (let floor = 1; floor <= floors; floor++) {
+                for (let room = 1; room <= roomsPerFloor; room++) {
+                    const roomNumber = `${floor}${room.toString().padStart(2, '0')}`;
+                    const roomId = parseInt(roomNumber);
+                    
+                    // 部屋タイプをランダムに選択（スイートは少なめ）
+                    let roomType;
+                    const rand = Math.random();
+                    if (rand < 0.5) roomType = 'シングル';
+                    else if (rand < 0.8) roomType = 'ダブル';
+                    else if (rand < 0.95) roomType = 'ツイン';
+                    else roomType = 'スイート';
+                    
+                    // ステータスをランダムに設定
+                    const roomStatus = roomStatuses[Math.floor(Math.random() * roomStatuses.length)];
+                    const cleaningStatus = cleaningStatuses[Math.floor(Math.random() * cleaningStatuses.length)];
+                    
+                    // 清掃担当者をランダムに設定（空の場合もあり）
+                    const cleanerName = Math.random() < 0.7 ? cleaners[Math.floor(Math.random() * cleaners.length)] : '';
+                    
+                    // チェックイン・アウト時刻をランダムに設定
+                    const earlyCheckIn = Math.random() < 0.2;
+                    const lateCheckOut = Math.random() < 0.3;
+                    let checkInTime = '', checkOutTime = '';
+                    
+                    if (roomStatus === 'CI前' || roomStatus === '滞在中') {
+                        checkInTime = earlyCheckIn ? '13:00' : '15:00';
+                    }
+                    if (roomStatus === 'CO済' || roomStatus === '滞在中') {
+                        const hours = lateCheckOut ? 12 : Math.floor(Math.random() * 3) + 9;
+                        const minutes = Math.floor(Math.random() * 6) * 10;
+                        checkOutTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
+                    }
+                    
+                    rooms.push({
+                        id: roomId,
+                        number: roomNumber,
+                        floor: floor,
+                        roomType: roomType,
+                        roomStatus: roomStatus,
+                        cleaningStatus: cleaningStatus,
+                        cleanerName: cleanerName,
+                        earlyCheckIn: earlyCheckIn,
+                        lateCheckOut: lateCheckOut,
+                        checkInTime: checkInTime,
+                        checkOutTime: checkOutTime,
+                        memo: '',
+                        lostItem: '',
+                        isCleaningInProgress: false
+                    });
+                }
+            }
+            
+            return rooms;
+        }
+        
+        // ホテルデータを初期化
+        function initializeHotelData() {
+            Object.keys(hotelData).forEach(hotelType => {
+                const hotel = hotelData[hotelType];
+                hotel.rooms = generateRooms(hotelType, hotel.floors, hotel.roomsPerFloor);
+            });
+        }
+        
+        // 現在のホテルと部屋データ
+        let currentHotel = 'small';
+        let rooms = []; // 初期化時に設定
         
         // 週間データ（デモ用）
         const weeklyData = [
@@ -2113,7 +2258,11 @@
         
         // 初期化
         function init() {
+            initializeHotelData(); // ホテルデータを最初に初期化
+            rooms = hotelData[currentHotel].rooms; // 部屋データを設定
             updateDate();
+            updateCleanerSelect(); // 清掃担当者選択を初期化
+            updateFloorButtons(); // フロアボタンを初期化
             updateCounts();
             renderRooms();
             updateSortButtons(); // ソートボタンの初期状態を設定
@@ -2134,7 +2283,95 @@
         function changeFacility() {
             const facilitySelect = document.getElementById('facilitySelect');
             const selectedFacility = facilitySelect.value;
-            // 現在は何も変更しない（将来の拡張用）
+            
+            // ホテルを変更
+            currentHotel = selectedFacility;
+            rooms = hotelData[currentHotel].rooms;
+            
+            // 清掃担当者セレクトボックスを更新
+            updateCleanerSelect();
+            
+            // フロアボタンを更新
+            updateFloorButtons();
+            
+            // フィルターをリセット
+            selectedFloors = [];
+            activeFilters = [];
+            selectedCleaner = '';
+            
+            // 表示を更新
+            updateCounts();
+            renderRooms();
+            updateActiveFilters();
+        }
+        
+        // 清掃担当者セレクトボックスを更新
+        function updateCleanerSelect() {
+            const cleanerSelect = document.getElementById('cleanerSelect');
+            const cleaners = hotelData[currentHotel].cleaners;
+            
+            cleanerSelect.innerHTML = `
+                <option value="">清掃担当者</option>
+                <option value="未定">担当者未定</option>
+            `;
+            
+            cleaners.forEach(cleaner => {
+                const option = document.createElement('option');
+                option.value = cleaner;
+                option.textContent = cleaner;
+                cleanerSelect.appendChild(option);
+            });
+        }
+        
+        // フロアボタンを更新
+        function updateFloorButtons() {
+            const floorButtons = document.getElementById('floorButtons');
+            const floors = hotelData[currentHotel].floors;
+            
+            floorButtons.innerHTML = '';
+            
+            for (let floor = 1; floor <= floors; floor++) {
+                const button = document.createElement('button');
+                button.className = 'floor-btn';
+                button.id = `floor-${floor}`;
+                button.textContent = `${floor}F`;
+                button.onclick = () => toggleFloor(floor);
+                floorButtons.appendChild(button);
+            }
+            
+            // スクロール矢印の表示判定
+            updateFloorScrollArrows();
+        }
+        
+        // フロアボタンのスクロール機能
+        function scrollFloorsLeft() {
+            const floorButtons = document.getElementById('floorButtons');
+            floorButtons.scrollBy({ left: -120, behavior: 'smooth' });
+        }
+        
+        function scrollFloorsRight() {
+            const floorButtons = document.getElementById('floorButtons');
+            floorButtons.scrollBy({ left: 120, behavior: 'smooth' });
+        }
+        
+        function updateFloorScrollArrows() {
+            const floors = hotelData[currentHotel].floors;
+            const leftArrow = document.getElementById('floorArrowLeft');
+            const rightArrow = document.getElementById('floorArrowRight');
+            const floorButtons = document.getElementById('floorButtons');
+            
+            // 5階以上の場合のみ矢印を表示
+            if (floors > 5) {
+                leftArrow.style.display = 'flex';
+                rightArrow.style.display = 'flex';
+                // 矢印が表示されているときはpaddingを4pxに設定
+                floorButtons.style.padding = '0 4px';
+            } else {
+                leftArrow.style.display = 'none';
+                rightArrow.style.display = 'none';
+                // 矢印が非表示のときはpaddingを16pxに設定
+                floorButtons.style.padding = '0 16px';
+            }
         }
         
         // 清掃担当者フィルター
