@@ -2090,7 +2090,6 @@
             updateDate();
             updateCounts();
             renderRooms();
-            renderAIRoute();
             updateSortButtons(); // ソートボタンの初期状態を設定
         }
         
@@ -2109,7 +2108,6 @@
         function changeFacility() {
             const facilitySelect = document.getElementById('facilitySelect');
             const selectedFacility = facilitySelect.value;
-            console.log('施設変更:', selectedFacility);
             // 現在は何も変更しない（将来の拡張用）
         }
         
@@ -2521,7 +2519,6 @@
                 // カウント更新は不要（ステータス変更していないため）
                 renderRooms();
                 
-                console.log(`部屋${room.number}の清掃を開始しました`);
             }
         }
         
@@ -2537,7 +2534,6 @@
                 renderRooms();
                 renderAIRoute();
                 
-                console.log(`部屋${room.number}の清掃を終了しました`);
             }
         }
         
@@ -2553,7 +2549,6 @@
                 renderRooms();
                 renderAIRoute();
                 
-                console.log(`部屋${room.number}を未清掃に戻しました`);
             }
         }
         
@@ -2571,6 +2566,7 @@
         function toggleWeeklyCalendar() {
             const calendar = document.getElementById('weeklyCalendar');
             calendar.style.display = 'flex';
+            currentWeekOffset = 0; // カレンダーを開くたびに今週にリセット
             generateWeeklyCalendarData();
         }
 
@@ -2591,7 +2587,8 @@
 
         function generateWeeklyCalendarData() {
             // 現在の日付から週の開始日を計算
-            const startDate = new Date(currentDate);
+            const today = new Date(); // 現在の日付を新たに取得
+            const startDate = new Date(today);
             startDate.setDate(startDate.getDate() + (currentWeekOffset * 7));
             
             // 週の日曜日を取得
@@ -2617,7 +2614,9 @@
             // 日付ヘッダーを更新
             weekDates.forEach((date, index) => {
                 const headerCell = document.getElementById(`day${index + 1}Header`);
-                headerCell.textContent = `${date.getMonth() + 1}/${date.getDate()}`;
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                headerCell.textContent = `${month}/${day}`;
                 
                 // 今日の日付かチェック
                 const today = new Date();
