@@ -574,7 +574,7 @@
         .graph-section {
             background: linear-gradient(to right, rgb(240, 240, 249), rgb(219, 234, 254));
             color: #0c4a6e;
-            margin: 0 0 8px 0;
+            margin: 0 0 0 0;
             overflow: hidden;
             transition: all 0.3s ease;
         }
@@ -1677,6 +1677,30 @@
                 </div>
             </div>
             
+            <!-- 清掃グラフ -->
+            <div class="graph-section">
+                <div class="graph-header" onclick="toggleGraph()">
+                    <div class="graph-title">
+                        <svg class="graph-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M3 13h2v8H3zm4-8h2v16H7zm4-2h2v18h-2zm4 4h2v14h-2zm4-4h2v18h-2z"/>
+                        </svg>
+                        <span>週間清掃推移（施設別）</span>
+                    </div>
+                    <svg class="toggle-icon" id="graphToggleIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+                <div class="graph-content" id="graphContent">
+                    <div class="graph-summary" id="graphSummary">今日は昨日より2部屋多く清掃が必要です</div>
+                    <div class="graph-scroll-container" id="graphScrollContainer">
+                        <div class="graph-container">
+                            <div class="graph-bars" id="graphBars"></div>
+                            <div class="graph-labels" id="graphLabels"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- 施設・清掃担当者選択 -->
             <div class="selector-row">
                 <div class="selector-half">
@@ -1695,30 +1719,6 @@
                         <option value="鈴木">鈴木</option>
                         <option value="山田">山田</option>
                     </select>
-                </div>
-            </div>
-            
-            <!-- 清掃グラフ -->
-            <div class="graph-section">
-                <div class="graph-header" onclick="toggleGraph()">
-                    <div class="graph-title">
-                        <svg class="graph-icon" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M3 13h2v8H3zm4-8h2v16H7zm4-2h2v18h-2zm4 4h2v14h-2zm4-4h2v18h-2z"/>
-                        </svg>
-                        <span>週間清掃推移</span>
-                    </div>
-                    <svg class="toggle-icon" id="graphToggleIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </div>
-                <div class="graph-content" id="graphContent">
-                    <div class="graph-summary" id="graphSummary">今日は昨日より2部屋多く清掃が必要です</div>
-                    <div class="graph-scroll-container" id="graphScrollContainer">
-                        <div class="graph-container">
-                            <div class="graph-bars" id="graphBars"></div>
-                            <div class="graph-labels" id="graphLabels"></div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -2186,11 +2186,11 @@
             const summary = document.getElementById('graphSummary');
             const diff = today - yesterday;
             if (diff > 0) {
-                summary.textContent = `今日は昨日より${diff}部屋多く清掃が必要です`;
+                summary.textContent = `前日より${diff}部屋多く清掃が必要です`;
             } else if (diff < 0) {
-                summary.textContent = `今日は昨日より${Math.abs(diff)}部屋少ない清掃です`;
+                summary.textContent = `前日より${Math.abs(diff)}部屋少ない清掃です`;
             } else {
-                summary.textContent = '今日は昨日と同じ清掃数です';
+                summary.textContent = '前日と同じ清掃数です';
             }
             
             // 最大値を取得
