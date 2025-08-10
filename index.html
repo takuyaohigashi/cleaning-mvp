@@ -877,62 +877,37 @@
             transform: scale(0.98);
         }
         
-        .room-card.status-gray {
-            background: #f9fafb;
-            border-color: #d1d5db;
-        }
-        
-        .room-card.status-red {
-            background: #fef2f2;
-            border-color: #fecaca;
-        }
-        
-        .room-card.status-green {
-            background: #f0fdf4;
-            border-color: #bbf7d0;
-        }
-        
-        .room-card.status-blue {
-            background: #eff6ff;
-            border-color: #bfdbfe;
-        }
-        
-        .room-card.status-blue:hover {
-            background: #eff6ff !important;
-            border-color: #bfdbfe !important;
-        }
-        
-        .room-card.status-purple {
-            background: #faf5ff;
-            border-color: #ddd6fe;
-        }
-        
-        .room-card.status-orange {
-            background: #fff7ed;
-            border-color: #fed7aa;
-        }
-        
-        /* All status colors hover effects disabled */
+        .room-card.status-gray,
         .room-card.status-gray:hover {
             background: #f9fafb !important;
             border-color: #d1d5db !important;
         }
         
+        .room-card.status-red,
         .room-card.status-red:hover {
             background: #fef2f2 !important;
             border-color: #fecaca !important;
         }
         
+        .room-card.status-green,
         .room-card.status-green:hover {
             background: #f0fdf4 !important;
             border-color: #bbf7d0 !important;
         }
         
+        .room-card.status-blue,
+        .room-card.status-blue:hover {
+            background: #eff6ff !important;
+            border-color: #bfdbfe !important;
+        }
+        
+        .room-card.status-purple,
         .room-card.status-purple:hover {
             background: #faf5ff !important;
             border-color: #ddd6fe !important;
         }
         
+        .room-card.status-orange,
         .room-card.status-orange:hover {
             background: #fff7ed !important;
             border-color: #fed7aa !important;
@@ -1081,7 +1056,7 @@
         }
         
         .cleaning-btn {
-            padding: 4px 12px;
+            padding: 4px 8px;
             font-size: 16px;
             font-weight: 600;
             border: none;
@@ -1107,10 +1082,19 @@
             background: #059669;
         }
         
+        .cleaning-btn.reset {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .cleaning-btn.reset:hover {
+            background: #d97706;
+        }
+        
         
         .room-controls {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1.2fr 1fr;
             gap: 8px;
             align-items: center;
             text-align: center;
@@ -1910,14 +1894,40 @@
     </div>
     
     <script>
-        // データ
-        let currentDate = new Date();
+        // グローバル変数
+        let currentUser = 'admin';
+        let currentSort = { type: 'room', direction: 'asc' };
+        let currentDate = new Date(2025, 0, 7); // 2025年1月7日（火）
         let activeFilters = [];
         let selectedFloors = [];
         let currentEditingRoom = null;
         let pendingChange = null;
         let aiRouteOpen = false;
         let graphOpen = false;
+        
+        // 定数定義
+        const CARD_CLASS_MAP = {
+            '清掃不要': 'status-gray',
+            '未清掃': 'status-red',
+            '清掃済': 'status-green',
+            '点検済': 'status-blue',
+            'DD': 'status-purple'
+        };
+        
+        const STATUS_CLASS_MAP = {
+            '未使用': 'unused',
+            'CI前': 'before-ci',
+            '滞在中': 'staying',
+            'CO済': 'after-co'
+        };
+        
+        const CLEANING_CLASS_MAP = {
+            '未清掃': 'cleaning-red',
+            '清掃済': 'cleaning-green',
+            '点検済': 'cleaning-blue',
+            'DD': 'cleaning-purple',
+            '清掃不要': 'cleaning-gray'
+        };
         
         const rooms = [
             { id: 101, number: '101', floor: 1, roomType: 'シングル', roomStatus: '未使用', cleaningStatus: '清掃済', cleanerName: '田中', earlyCheckIn: false, lateCheckOut: false, checkInTime: '', checkOutTime: '', memo: '', lostItem: '', isCleaningInProgress: false },
@@ -1996,11 +2006,7 @@
                 const cleaningTime = room.roomStatus === 'CO済' ? 25 : 15; // CO済は25分、その他15分
                 totalMinutes += cleaningTime;
                 
-                const cleaningClass = {
-                    '未清掃': 'cleaning-red',
-                    '清掃済': 'cleaning-green',
-                    '清掃不要': 'cleaning-gray'
-                }[room.cleaningStatus] || '';
+                const cleaningClass = CLEANING_CLASS_MAP[room.cleaningStatus] || '';
                 
                 return `
                     <div class="route-item">
@@ -2247,6 +2253,35 @@
             document.getElementById('currentDate').textContent = `${month}月${day}日`;
         }
         
+        // ヘルパー関数
+        function createTimeDisplay(room) {
+            if (room.roomStatus === '未使用') return '';
+            
+            const timeDisplayItems = [];
+            
+            // C/I表示
+            const hasCheckIn = room.checkInTime && (room.roomStatus === 'CI前' || room.roomStatus === 'CO済');
+            const earlyTag = room.earlyCheckIn ? '<span class="room-tag tag-blue">アーリー</span>' : '';
+            const checkInTime = hasCheckIn ? room.checkInTime : '-';
+            timeDisplayItems.push(`<div class="time-display-row">
+                <div class="time-tag-col">${earlyTag}</div>
+                <div class="time-label-col">C/I:</div>
+                <div class="time-value-col">${checkInTime}</div>
+            </div>`);
+            
+            // C/O表示
+            const hasCheckOut = room.checkOutTime && (room.roomStatus === 'CO済' || room.roomStatus === '滞在中' || room.roomStatus === 'CI前');
+            const lateTag = room.lateCheckOut ? '<span class="room-tag tag-purple">レイト</span>' : '';
+            const checkOutTime = hasCheckOut ? room.checkOutTime : '-';
+            timeDisplayItems.push(`<div class="time-display-row">
+                <div class="time-tag-col">${lateTag}</div>
+                <div class="time-label-col">C/O:</div>
+                <div class="time-value-col">${checkOutTime}</div>
+            </div>`);
+            
+            return `<div class="time-display">${timeDisplayItems.join('')}</div>`;
+        }
+        
         // カウント更新
         function updateCounts() {
             document.getElementById('count-未清掃').textContent = rooms.filter(r => r.cleaningStatus === '未清掃').length;
@@ -2303,56 +2338,12 @@
             }
             
             roomList.innerHTML = filteredRooms.map(room => {
-                const cardClass = room.cleaningStatus === '清掃不要' ? 'status-gray' :
-                                 room.cleaningStatus === '未清掃' ? 'status-red' :
-                                 room.cleaningStatus === '清掃済' ? 'status-green' :
-                                 room.cleaningStatus === '点検済' ? 'status-blue' :
-                                 room.cleaningStatus === 'DD' ? 'status-purple' : 'status-orange';
-                
-                const statusClass = {
-                    '未使用': 'unused',
-                    'CI前': 'before-ci',
-                    '滞在中': 'staying',
-                    'CO済': 'after-co'
-                }[room.roomStatus] || '';
-                
-                const cleaningClass = {
-                    '未清掃': 'cleaning-red',
-                    '清掃済': 'cleaning-green',
-                    '点検済': 'cleaning-blue',
-                    'DD': 'cleaning-purple',
-                    '清掃不要': 'cleaning-gray'
-                }[room.cleaningStatus] || '';
+                const cardClass = CARD_CLASS_MAP[room.cleaningStatus] || 'status-orange';
+                const statusClass = STATUS_CLASS_MAP[room.roomStatus] || '';
+                const cleaningClass = CLEANING_CLASS_MAP[room.cleaningStatus] || '';
                 
                 // チェックイン・チェックアウト時間の表示用文字列を作成（右カラム用）
-                const timeDisplayItems = [];
-                
-                // 常にC/Iを表示（時刻がなければ"-"）
-                if (room.roomStatus !== '未使用') {
-                    const hasCheckIn = room.checkInTime && (room.roomStatus === 'CI前' || room.roomStatus === 'CO済');
-                    const earlyTag = room.earlyCheckIn ? '<span class="room-tag tag-blue">アーリー</span>' : '';
-                    const checkInTime = hasCheckIn ? room.checkInTime : '-';
-                    timeDisplayItems.push(`<div class="time-display-row">
-                        <div class="time-tag-col">${earlyTag}</div>
-                        <div class="time-label-col">C/I:</div>
-                        <div class="time-value-col">${checkInTime}</div>
-                    </div>`);
-                }
-                
-                // 常にC/Oを表示（時刻がなければ"-"）
-                if (room.roomStatus !== '未使用') {
-                    const hasCheckOut = room.checkOutTime && (room.roomStatus === 'CO済' || room.roomStatus === '滞在中');
-                    const lateTag = room.lateCheckOut ? '<span class="room-tag tag-purple">レイト</span>' : '';
-                    const checkOutTime = hasCheckOut ? room.checkOutTime : '-';
-                    timeDisplayItems.push(`<div class="time-display-row">
-                        <div class="time-tag-col">${lateTag}</div>
-                        <div class="time-label-col">C/O:</div>
-                        <div class="time-value-col">${checkOutTime}</div>
-                    </div>`);
-                }
-                
-                const timeDisplayHtml = timeDisplayItems.length > 0 ? 
-                    `<div class="time-display">${timeDisplayItems.join('')}</div>` : '';
+                const timeDisplayHtml = createTimeDisplay(room);
                 
                 // 清掃開始・終了ボタンの表示条件
                 let cleaningActionsHtml = '';
@@ -2361,12 +2352,16 @@
                                        (room.roomStatus === 'CO済' || room.roomStatus === '未使用') &&
                                        !room.isCleaningInProgress;
                     const showEndBtn = room.isCleaningInProgress;  // 清掃中なら終了ボタンを表示
+                    const showResetBtn = room.cleaningStatus === '清掃済' && 
+                                        (room.roomStatus === 'CO済' || room.roomStatus === '未使用') &&
+                                        !room.isCleaningInProgress;  // 清掃済みなら未清掃に戻すボタンを表示
                     
-                    if (showStartBtn || showEndBtn) {
+                    if (showStartBtn || showEndBtn || showResetBtn) {
                         cleaningActionsHtml = `
                             <div class="cleaning-actions">
-                                ${showStartBtn ? `<button class="cleaning-btn start" onclick="event.stopPropagation(); startCleaning(${room.id})">清掃開始</button>` : ''}
-                                ${showEndBtn ? `<button class="cleaning-btn end" onclick="event.stopPropagation(); endCleaning(${room.id})">清掃終了</button>` : ''}
+                                ${showStartBtn ? `<button class="cleaning-btn start" onclick="event.stopPropagation(); confirmStartCleaning(${room.id})">清掃開始</button>` : ''}
+                                ${showEndBtn ? `<button class="cleaning-btn end" onclick="event.stopPropagation(); confirmEndCleaning(${room.id})">清掃終了</button>` : ''}
+                                ${showResetBtn ? `<button class="cleaning-btn reset" onclick="event.stopPropagation(); confirmResetCleaning(${room.id})">未清掃に戻す</button>` : ''}
                             </div>
                         `;
                     }
@@ -2555,10 +2550,18 @@
         
         function confirmChange() {
             if (pendingChange) {
-                pendingChange.room[pendingChange.field] = pendingChange.newValue;
-                updateCounts();
-                renderRooms();
-                renderAIRoute(); // AI清掃ルートも更新
+                if (pendingChange.type === 'startCleaning') {
+                    startCleaning(pendingChange.roomId);
+                } else if (pendingChange.type === 'endCleaning') {
+                    endCleaning(pendingChange.roomId);
+                } else if (pendingChange.type === 'resetCleaning') {
+                    resetCleaning(pendingChange.roomId);
+                } else {
+                    pendingChange.room[pendingChange.field] = pendingChange.newValue;
+                    updateCounts();
+                    renderRooms();
+                    renderAIRoute(); // AI清掃ルートも更新
+                }
             }
             document.getElementById('confirmModal').classList.remove('active');
             pendingChange = null;
@@ -2571,6 +2574,36 @@
         }
         
         // 清掃開始・終了機能
+        function confirmStartCleaning(roomId) {
+            const room = rooms.find(r => r.id === roomId);
+            if (room) {
+                pendingChange = { type: 'startCleaning', roomId: roomId };
+                document.getElementById('confirmMessage').textContent = 
+                    `部屋${room.number}の清掃を開始しますか？`;
+                document.getElementById('confirmModal').classList.add('active');
+            }
+        }
+        
+        function confirmEndCleaning(roomId) {
+            const room = rooms.find(r => r.id === roomId);
+            if (room) {
+                pendingChange = { type: 'endCleaning', roomId: roomId };
+                document.getElementById('confirmMessage').textContent = 
+                    `部屋${room.number}の清掃を終了しますか？`;
+                document.getElementById('confirmModal').classList.add('active');
+            }
+        }
+        
+        function confirmResetCleaning(roomId) {
+            const room = rooms.find(r => r.id === roomId);
+            if (room) {
+                pendingChange = { type: 'resetCleaning', roomId: roomId };
+                document.getElementById('confirmMessage').textContent = 
+                    `部屋${room.number}を未清掃に戻しますか？`;
+                document.getElementById('confirmModal').classList.add('active');
+            }
+        }
+        
         function startCleaning(roomId) {
             const room = rooms.find(r => r.id === roomId);
             if (room && currentUser === 'cleaner') {
@@ -2607,6 +2640,22 @@
             }
         }
         
+        function resetCleaning(roomId) {
+            const room = rooms.find(r => r.id === roomId);
+            if (room && currentUser === 'cleaner') {
+                // 未清掃に戻す処理
+                room.cleaningStatus = '未清掃';
+                room.isCleaningInProgress = false;
+                
+                // カウント更新
+                updateCounts();
+                renderRooms();
+                renderAIRoute();
+                
+                console.log(`部屋${room.number}を未清掃に戻しました`);
+            }
+        }
+        
         // 画像アップロード
         document.getElementById('imageUpload').addEventListener('change', function(e) {
             if (e.target.files[0]) {
@@ -2617,7 +2666,6 @@
         
         // 週間カレンダー機能
         let currentWeekOffset = 0;
-        let currentSort = { type: 'room', direction: 'asc' };
 
         function toggleWeeklyCalendar() {
             const calendar = document.getElementById('weeklyCalendar');
@@ -2856,7 +2904,6 @@
         }
 
         // ログイン機能
-        let currentUser = null;
         
         function login(userType) {
             currentUser = userType;
@@ -2874,7 +2921,7 @@
                 showCleanerFeatures();
             }
             
-            // メインアプリの初期化
+            // 初期化
             init();
         }
         
