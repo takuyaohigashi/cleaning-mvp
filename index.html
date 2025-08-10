@@ -2144,6 +2144,20 @@
         function renderGraph() {
             // 1ヶ月分のデータを生成（今日を中心に前後15日）
             const monthlyData = [];
+            
+            // ホテル規模に応じた部屋数範囲を設定
+            const hotelInfo = hotelData[currentHotel];
+            const totalRooms = hotelInfo.floors * hotelInfo.roomsPerFloor;
+            let maxRange;
+            
+            if (currentHotel === 'small') {
+                maxRange = 15; // 小規模: 0-15部屋
+            } else if (currentHotel === 'medium') {
+                maxRange = 40; // 中規模: 0-40部屋
+            } else { // large
+                maxRange = 60; // 大規模: 0-60部屋
+            }
+            
             for (let i = -15; i <= 15; i++) {
                 const date = new Date(currentDate);
                 date.setDate(date.getDate() + i);
@@ -2154,8 +2168,8 @@
                     // 今日は実際の未清掃数
                     count = rooms.filter(r => r.cleaningStatus === '未清掃').length;
                 } else {
-                    // その他の日はランダム（0〜12部屋）で変化を付ける
-                    count = Math.floor(Math.random() * 13);
+                    // その他の日はホテル規模に応じたランダム数値
+                    count = Math.floor(Math.random() * (maxRange + 1));
                 }
                 
                 monthlyData.push({
@@ -2302,7 +2316,12 @@
             // 表示を更新
             updateCounts();
             renderRooms();
-            updateActiveFilters();
+            
+            // グラフが開いている場合は更新（DOM要素の状態から判定）
+            const graphContent = document.getElementById('graphContent');
+            if (graphContent && graphContent.classList.contains('open')) {
+                renderGraph();
+            }
         }
         
         // 清掃担当者セレクトボックスを更新
