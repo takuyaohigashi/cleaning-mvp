@@ -184,7 +184,7 @@
         
         /* ステータスサマリー */
         .status-summary {
-            padding: 12px 0 0;
+            padding: 0;
             background: white;
             position: relative;
         }
@@ -203,7 +203,7 @@
             scrollbar-width: none;
             -ms-overflow-style: none;
             flex: 1;
-            padding: 0 16px;
+            padding: 8px 0 0 0;
         }
         
         .status-grid::-webkit-scrollbar {
@@ -232,6 +232,36 @@
             width: 20px;
             height: 20px;
             color: #6b7280;
+        }
+        
+        /* 施設選択 */
+        .facility-selector {
+            padding: 8px 16px;
+            background: white;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .facility-dropdown {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .facility-dropdown:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .facility-dropdown:hover {
+            border-color: #d1d5db;
         }
         
         .status-btn {
@@ -522,7 +552,7 @@
         
         /* 清掃グラフセクション */
         .graph-section {
-            background: linear-gradient(135deg, #bae6fd 0%, #7dd3fc 100%);
+            background: linear-gradient(135deg, #e6e6ff 0%, #cfd0ff 100%);
             color: #0c4a6e;
             margin: 0;
             overflow: hidden;
@@ -1102,14 +1132,13 @@
             width: 80px;
             background: #f8fafc;
             border-right: 2px solid #d1d5db;
-            overflow-y: auto;
+            overflow-y: hidden;
         }
         
         .calendar-content {
             flex: 1;
             overflow-x: auto;
             overflow-y: auto;
-            padding: 0 0 20px;
         }
         
         .weekly-calendar-grid {
@@ -1122,7 +1151,6 @@
             grid-template-columns: repeat(7, 1fr);
             gap: 1px;
             background: #e5e7eb;
-            border-radius: 8px 8px 0 0;
             overflow: hidden;
             position: sticky;
             top: 0;
@@ -1139,6 +1167,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            min-height: 50px;
         }
         
         .day-header-cell {
@@ -1470,6 +1502,15 @@
             </div>
         </div>
         
+        <!-- 施設選択 -->
+        <div class="facility-selector">
+            <select class="facility-dropdown" id="facilitySelect" onchange="changeFacility()">
+                <option value="demo-hotel-a">デモホテルA</option>
+                <option value="demo-hotel-b">デモホテルB</option>
+                <option value="demo-hotel-c">デモホテルC</option>
+            </select>
+        </div>
+
         <!-- 清掃グラフ -->
         <div class="graph-section">
             <div class="graph-header" onclick="toggleGraph()">
@@ -2063,6 +2104,14 @@
             statusGrid.scrollBy({ left: 200, behavior: 'smooth' });
         }
         
+        // 施設変更
+        function changeFacility() {
+            const facilitySelect = document.getElementById('facilitySelect');
+            const selectedFacility = facilitySelect.value;
+            console.log('施設変更:', selectedFacility);
+            // 現在は何も変更しない（将来の拡張用）
+        }
+        
         // 日付更新
         function updateDate() {
             const month = currentDate.getMonth() + 1;
@@ -2446,6 +2495,9 @@
             }).join('');
             
             content.innerHTML = roomRows;
+            
+            // スクロール同期を設定
+            syncScrolling();
         }
         
         function generateReservationsForRoom(room, weekDates) {
@@ -2502,6 +2554,33 @@
                 if (random < 0.8) return 'no-cleaning';
                 return 'occupied';
             }
+        }
+
+        // スクロール同期機能
+        function syncScrolling() {
+            const roomColumn = document.querySelector('.room-column');
+            const calendarContent = document.querySelector('.calendar-content');
+            
+            if (!roomColumn || !calendarContent) return;
+            
+            // 同期フラグ（無限ループ防止）
+            let isSyncing = false;
+            
+            // カレンダーコンテンツのスクロールに合わせて部屋列をスクロール
+            calendarContent.addEventListener('scroll', function() {
+                if (isSyncing) return;
+                isSyncing = true;
+                roomColumn.scrollTop = calendarContent.scrollTop;
+                setTimeout(() => { isSyncing = false; }, 10);
+            });
+            
+            // 部屋列のスクロールに合わせてカレンダーコンテンツをスクロール
+            roomColumn.addEventListener('scroll', function() {
+                if (isSyncing) return;
+                isSyncing = true;
+                calendarContent.scrollTop = roomColumn.scrollTop;
+                setTimeout(() => { isSyncing = false; }, 10);
+            });
         }
 
         // ソート機能
