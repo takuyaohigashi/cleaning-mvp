@@ -867,7 +867,7 @@
         
         .room-card {
             margin-bottom: 8px;
-            padding: 12px;
+            padding: 8px;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             cursor: pointer;
@@ -950,9 +950,51 @@
             justify-self: start;
         }
         
-        .room-header .cleaning-actions {
+        .room-header .room-status-display {
             justify-self: center;
             grid-column: 2;
+        }
+        
+        .room-header .room-right-info {
+            justify-self: end;
+            grid-column: 3;
+        }
+        
+        .time-display {
+            font-size: 11px;
+            color: #6b7280;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .time-display-row {
+            display: grid;
+            grid-template-columns: 50px 25px 35px;
+            gap: 1px;
+            margin-bottom: 2px;
+            justify-content: end;
+            align-items: center;
+        }
+        
+        .time-display-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .time-tag-col {
+            text-align: right;
+            min-width: 50px;
+        }
+        
+        .time-label-col {
+            text-align: center;
+            white-space: nowrap;
+            min-width: 25px;
+        }
+        
+        .time-value-col {
+            text-align: center;
+            white-space: nowrap;
+            min-width: 35px;
         }
         
         .room-info {
@@ -1127,32 +1169,6 @@
             background: #fff7ed;
         }
         
-        .room-time-info {
-            margin-top: 4px;
-            font-size: 12px;
-            color: #6b7280;
-            display: flex;
-            gap: 12px;
-        }
-        
-        .time-item {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-        }
-        
-        .time-item .room-tag {
-            margin-right: 4px;
-        }
-        
-        .time-label {
-            color: #9ca3af;
-        }
-        
-        .time-value {
-            font-weight: 500;
-            color: #374151;
-        }
         
         /* 週間カレンダー */
         .weekly-calendar {
@@ -2308,18 +2324,35 @@
                     '清掃不要': 'cleaning-gray'
                 }[room.cleaningStatus] || '';
                 
-                // チェックイン・チェックアウト時間の表示用文字列を作成
-                const timeInfoItems = [];
-                if (room.checkInTime && (room.roomStatus === 'CI前' || room.roomStatus === 'CO済')) {
-                    const earlyLabel = room.earlyCheckIn ? '<span class="room-tag tag-blue">アーリー</span>' : '';
-                    timeInfoItems.push(`<div class="time-item">${earlyLabel}<span class="time-label">C/I:</span><span class="time-value">${room.checkInTime}</span></div>`);
-                }
-                if (room.checkOutTime && (room.roomStatus === 'CO済' || room.roomStatus === '滞在中')) {
-                    const lateLabel = room.lateCheckOut ? '<span class="room-tag tag-purple">レイト</span>' : '';
-                    timeInfoItems.push(`<div class="time-item">${lateLabel}<span class="time-label">C/O:</span><span class="time-value">${room.checkOutTime}</span></div>`);
+                // チェックイン・チェックアウト時間の表示用文字列を作成（右カラム用）
+                const timeDisplayItems = [];
+                
+                // 常にC/Iを表示（時刻がなければ"-"）
+                if (room.roomStatus !== '未使用') {
+                    const hasCheckIn = room.checkInTime && (room.roomStatus === 'CI前' || room.roomStatus === 'CO済');
+                    const earlyTag = room.earlyCheckIn ? '<span class="room-tag tag-blue">アーリー</span>' : '';
+                    const checkInTime = hasCheckIn ? room.checkInTime : '-';
+                    timeDisplayItems.push(`<div class="time-display-row">
+                        <div class="time-tag-col">${earlyTag}</div>
+                        <div class="time-label-col">C/I:</div>
+                        <div class="time-value-col">${checkInTime}</div>
+                    </div>`);
                 }
                 
-                const timeInfoHtml = timeInfoItems.length > 0 ? `<div class="room-time-info">${timeInfoItems.join('')}</div>` : '';
+                // 常にC/Oを表示（時刻がなければ"-"）
+                if (room.roomStatus !== '未使用') {
+                    const hasCheckOut = room.checkOutTime && (room.roomStatus === 'CO済' || room.roomStatus === '滞在中');
+                    const lateTag = room.lateCheckOut ? '<span class="room-tag tag-purple">レイト</span>' : '';
+                    const checkOutTime = hasCheckOut ? room.checkOutTime : '-';
+                    timeDisplayItems.push(`<div class="time-display-row">
+                        <div class="time-tag-col">${lateTag}</div>
+                        <div class="time-label-col">C/O:</div>
+                        <div class="time-value-col">${checkOutTime}</div>
+                    </div>`);
+                }
+                
+                const timeDisplayHtml = timeDisplayItems.length > 0 ? 
+                    `<div class="time-display">${timeDisplayItems.join('')}</div>` : '';
                 
                 // 清掃開始・終了ボタンの表示条件
                 let cleaningActionsHtml = '';
@@ -2345,17 +2378,19 @@
                                 <span class="room-number">${room.number}</span>
                                 <span class="room-type">${room.roomType}</span>
                             </div>
-                            ${cleaningActionsHtml}
+                            <div class="room-status-display">
+                                <span class="room-status ${statusClass}">${room.roomStatus}</span>
+                            </div>
+                            <div class="room-right-info">
+                                ${timeDisplayHtml}
+                            </div>
                         </div>
-                        ${timeInfoHtml}
                         <div class="room-controls">
                             ${currentUser === 'cleaner' ? 
                                 `<div class="control-item">
                                     <span class="cleaning-status-text ${cleaningClass}">${room.cleaningStatus}</span>
                                  </div>
-                                 <div class="control-item">
-                                    <span class="room-status ${statusClass}">${room.roomStatus}</span>
-                                 </div>
+                                 ${cleaningActionsHtml ? `<div class="control-item">${cleaningActionsHtml}</div>` : '<div class="control-item"></div>'}
                                  <div class="control-item">
                                     <span class="cleaner-name-text">${room.cleanerName || '担当者未定'}</span>
                                  </div>` :
@@ -2369,7 +2404,7 @@
                                     </select>
                                  </div>
                                  <div class="control-item">
-                                    <span class="room-status ${statusClass}">${room.roomStatus}</span>
+                                    <!-- 管理者画面では中央列は空 -->
                                  </div>
                                  <div class="control-item">
                                     <select class="select" onclick="event.stopPropagation()" onchange="confirmCleanerChange(${room.id}, this.value)">
