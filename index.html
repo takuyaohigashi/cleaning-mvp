@@ -117,11 +117,8 @@
             background: white;
         }
         
-        /* 固定ヘッダー部分 */
+        /* ヘッダー部分 */
         .fixed-header {
-            position: sticky;
-            top: 0;
-            z-index: 20;
             background: white;
             border-bottom: 1px solid #e5e7eb;
         }
@@ -914,16 +911,46 @@
             transform: scale(0.95);
         }
         
-        /* スクロール可能エリア */
-        .scrollable-content {
-            flex: 1;
-            overflow-y: auto;
-            padding-bottom: 80px;
-        }
         
         /* 部屋リスト */
         .room-list {
             padding: 8px 16px;
+        }
+        
+        /* 上に戻るボタン */
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 48px;
+            height: 48px;
+            background: none;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s, background-color 0.3s;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .scroll-to-top.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .scroll-to-top:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .scroll-to-top svg {
+            width: 24px;
+            height: 24px;
+            color: #6b7280;
         }
         
         .room-card {
@@ -1825,11 +1852,15 @@
             </div>
         </div>
         
-        <!-- スクロール可能エリア -->
-        <div class="scrollable-content">
-            <!-- 部屋リスト -->
-            <div class="room-list" id="roomList"></div>
-        </div>
+        <!-- 部屋リスト -->
+        <div class="room-list" id="roomList"></div>
+        
+        <!-- 上に戻るボタン -->
+        <button class="scroll-to-top" id="scrollToTop" onclick="scrollToTop()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+            </svg>
+        </button>
         
         <!-- 週間カレンダービュー -->
         <div class="weekly-calendar" id="weeklyCalendar" style="display: none;">
@@ -3162,6 +3193,24 @@
                 graphSection.style.display = 'none';
             }
         }
+
+        // 上に戻る機能
+        function scrollToTop() {
+            window.scrollTo({ 
+                top: 0, 
+                behavior: 'smooth' 
+            });
+        }
+        
+        // スクロール位置監視（上に戻るボタンの表示制御）
+        window.addEventListener('scroll', function() {
+            const scrollToTopBtn = document.getElementById('scrollToTop');
+            if (window.scrollY > 300) {
+                scrollToTopBtn.classList.add('visible');
+            } else {
+                scrollToTopBtn.classList.remove('visible');
+            }
+        });
 
         // 初期化を条件付きに変更
         // init(); // ログイン後に呼ばれるように変更
