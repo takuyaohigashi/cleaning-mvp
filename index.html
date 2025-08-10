@@ -945,10 +945,6 @@
             color: #9a3412;
         }
         
-        .room-icons {
-            display: flex;
-            gap: 8px;
-        }
         
         .icon {
             width: 16px;
@@ -1037,7 +1033,11 @@
         .time-item {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
+        }
+        
+        .time-item .room-tag {
+            margin-right: 4px;
         }
         
         .time-label {
@@ -1788,7 +1788,7 @@
     <script>
         // データ
         let currentDate = new Date();
-        let activeFilter = null;
+        let activeFilters = [];
         let selectedFloors = [];
         let currentEditingRoom = null;
         let pendingChange = null;
@@ -2143,15 +2143,19 @@
                 filteredRooms = filteredRooms.filter(room => selectedFloors.includes(room.floor));
             }
             
-            // ステータスフィルター
-            if (activeFilter) {
-                if (activeFilter === 'early') {
-                    filteredRooms = filteredRooms.filter(room => room.earlyCheckIn);
-                } else if (activeFilter === 'late') {
-                    filteredRooms = filteredRooms.filter(room => room.lateCheckOut);
-                } else {
-                    filteredRooms = filteredRooms.filter(room => room.cleaningStatus === activeFilter);
-                }
+            // ステータスフィルター（複数選択対応）
+            if (activeFilters.length > 0) {
+                filteredRooms = filteredRooms.filter(room => {
+                    return activeFilters.some(filter => {
+                        if (filter === 'early') {
+                            return room.earlyCheckIn;
+                        } else if (filter === 'late') {
+                            return room.lateCheckOut;
+                        } else {
+                            return room.cleaningStatus === filter;
+                        }
+                    });
+                });
             }
             
             // ソート適用
@@ -2199,10 +2203,12 @@
                 // チェックイン・チェックアウト時間の表示用文字列を作成
                 const timeInfoItems = [];
                 if (room.checkInTime && (room.roomStatus === 'CI前' || room.roomStatus === 'CO済')) {
-                    timeInfoItems.push(`<div class="time-item"><span class="time-label">CI:</span><span class="time-value">${room.checkInTime}</span></div>`);
+                    const earlyLabel = room.earlyCheckIn ? '<span class="room-tag tag-blue">アーリー</span>' : '';
+                    timeInfoItems.push(`<div class="time-item">${earlyLabel}<span class="time-label">C/I:</span><span class="time-value">${room.checkInTime}</span></div>`);
                 }
                 if (room.checkOutTime && (room.roomStatus === 'CO済' || room.roomStatus === '滞在中')) {
-                    timeInfoItems.push(`<div class="time-item"><span class="time-label">CO:</span><span class="time-value">${room.checkOutTime}</span></div>`);
+                    const lateLabel = room.lateCheckOut ? '<span class="room-tag tag-purple">レイト</span>' : '';
+                    timeInfoItems.push(`<div class="time-item">${lateLabel}<span class="time-label">C/O:</span><span class="time-value">${room.checkOutTime}</span></div>`);
                 }
                 
                 const timeInfoHtml = timeInfoItems.length > 0 ? `<div class="room-time-info">${timeInfoItems.join('')}</div>` : '';
@@ -2213,10 +2219,6 @@
                             <div class="room-info">
                                 <span class="room-number">${room.number}</span>
                                 <span class="room-type">${room.roomType}</span>
-                            </div>
-                            <div class="room-icons">
-                                ${room.earlyCheckIn ? '<span class="room-tag tag-blue">アーリーC/I</span>' : ''}
-                                ${room.lateCheckOut ? '<span class="room-tag tag-purple">レイトC/O</span>' : ''}
                             </div>
                         </div>
                         ${timeInfoHtml}
@@ -2286,19 +2288,16 @@
                 'late': 'active-purple'
             };
             
-            // リセット
-            Object.keys(buttons).forEach(key => {
-                const btn = document.getElementById(`filter-${key}`);
-                if (btn) {
-                    btn.className = 'status-btn';
-                }
-            });
+            const btn = document.getElementById(`filter-${status}`);
+            const index = activeFilters.indexOf(status);
             
-            if (activeFilter === status) {
-                activeFilter = null;
+            if (index > -1) {
+                // 既に選択されている場合は削除
+                activeFilters.splice(index, 1);
+                btn.className = 'status-btn';
             } else {
-                activeFilter = status;
-                const btn = document.getElementById(`filter-${status}`);
+                // 選択されていない場合は追加
+                activeFilters.push(status);
                 btn.classList.add(buttons[status]);
             }
             
