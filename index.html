@@ -238,20 +238,16 @@
             color: #6b7280;
         }
         
-        /* 施設選択 */
-        .facility-selector {
+        /* 施設・清掃担当者選択 */
+        .selector-row {
             padding: 8px 16px;
             background: white;
             display: flex;
-            justify-content: center;
+            gap: 8px;
         }
         
-        /* 清掃担当者選択 */
-        .cleaner-selector {
-            padding: 0 16px 8px;
-            background: white;
-            display: flex;
-            justify-content: center;
+        .selector-half {
+            width: 50%;
         }
         
         .facility-dropdown {
@@ -1610,13 +1606,25 @@
             </div>
         </div>
         
-        <!-- 施設選択 -->
-        <div class="facility-selector">
-            <select class="facility-dropdown" id="facilitySelect" onchange="changeFacility()">
-                <option value="demo-hotel-a">デモホテルA</option>
-                <option value="demo-hotel-b">デモホテルB</option>
-                <option value="demo-hotel-c">デモホテルC</option>
-            </select>
+        <!-- 施設・清掃担当者選択 -->
+        <div class="selector-row">
+            <div class="selector-half">
+                <select class="facility-dropdown" id="facilitySelect" onchange="changeFacility()">
+                    <option value="demo-hotel-a">デモホテルA</option>
+                    <option value="demo-hotel-b">デモホテルB</option>
+                    <option value="demo-hotel-c">デモホテルC</option>
+                </select>
+            </div>
+            <div class="selector-half">
+                <select class="facility-dropdown" id="cleanerSelect" onchange="filterByCleaner()">
+                    <option value="">清掃担当者</option>
+                    <option value="未定">担当者未定</option>
+                    <option value="田中">田中</option>
+                    <option value="佐藤">佐藤</option>
+                    <option value="鈴木">鈴木</option>
+                    <option value="山田">山田</option>
+                </select>
+            </div>
         </div>
         
         <!-- 清掃グラフ -->
@@ -1641,18 +1649,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- 清掃担当者選択 -->
-        <div class="cleaner-selector">
-            <select class="facility-dropdown" id="cleanerSelect" onchange="filterByCleaner()">
-                <option value="">清掃担当者を選択</option>
-                <option value="未定">担当者未定</option>
-                <option value="田中">田中</option>
-                <option value="佐藤">佐藤</option>
-                <option value="鈴木">鈴木</option>
-                <option value="山田">山田</option>
-            </select>
         </div>
 
         <!-- ステータスサマリー -->
@@ -1956,135 +1952,6 @@
             { date: 1, count: 8 }    // 明日
         ];
         
-        // AI清掃ルート計算
-        function calculateAIRoute() {
-            const needsCleaning = rooms.filter(r => r.cleaningStatus === '未清掃');
-            
-            // 優先度順にソート（CO済 > CI前 > アーリーCI > その他）
-            const sorted = needsCleaning.sort((a, b) => {
-                const getPriority = (room) => {
-                    if (room.roomStatus === 'CO済') return 1;
-                    if (room.earlyCheckIn) return 2;
-                    if (room.roomStatus === 'CI前') return 3;
-                    return 4;
-                };
-                
-                const priorityDiff = getPriority(a) - getPriority(b);
-                if (priorityDiff !== 0) return priorityDiff;
-                
-                // 同じ優先度なら階数順
-                return a.floor - b.floor;
-            });
-            
-            // 階数を最適化（エレベーター移動を最小化）
-            const optimized = [];
-            const floors = [...new Set(sorted.map(r => r.floor))].sort();
-            
-            floors.forEach(floor => {
-                const floorRooms = sorted.filter(r => r.floor === floor);
-                optimized.push(...floorRooms);
-            });
-            
-            return optimized;
-        }
-        
-        // AI清掃ルート表示
-        function renderAIRoute() {
-            const route = calculateAIRoute();
-            const routeList = document.getElementById('routeList');
-            
-            if (route.length === 0) {
-                routeList.innerHTML = '<div style="text-align: center; padding: 20px; color: #0c4a6e;">清掃が必要な部屋はありません</div>';
-                return;
-            }
-            
-            const currentTime = new Date();
-            currentTime.setHours(9, 30, 0); // 開始時刻 9:30
-            let totalMinutes = 0;
-            
-            routeList.innerHTML = route.map((room, index) => {
-                const cleaningTime = room.roomStatus === 'CO済' ? 25 : 15; // CO済は25分、その他15分
-                totalMinutes += cleaningTime;
-                
-                const cleaningClass = CLEANING_CLASS_MAP[room.cleaningStatus] || '';
-                
-                return `
-                    <div class="route-item">
-                        <div class="route-item-left">
-                            <div class="route-number">${index + 1}</div>
-                            <div class="route-room-info">
-                                <span class="route-room">${room.number}</span>
-                                <span class="route-floor">${room.floor}F</span>
-                            </div>
-                        </div>
-                        <div class="route-controls">
-                            <select class="route-select ${cleaningClass}" 
-                                    onclick="event.stopPropagation()" 
-                                    onchange="confirmRouteCleaningChange(${room.id}, this.value)">
-                                <option value="未清掃" ${room.cleaningStatus === '未清掃' ? 'selected' : ''}>未清掃</option>
-                                <option value="清掃済" ${room.cleaningStatus === '清掃済' ? 'selected' : ''}>清掃済</option>
-                                <option value="清掃不要" ${room.cleaningStatus === '清掃不要' ? 'selected' : ''}>清掃不要</option>
-                            </select>
-                            <select class="route-select" 
-                                    onclick="event.stopPropagation()" 
-                                    onchange="confirmRouteCleanerChange(${room.id}, this.value)">
-                                <option value="" ${!room.cleanerName ? 'selected' : ''}>未定</option>
-                                <option value="田中" ${room.cleanerName === '田中' ? 'selected' : ''}>田中</option>
-                                <option value="佐藤" ${room.cleanerName === '佐藤' ? 'selected' : ''}>佐藤</option>
-                                <option value="鈴木" ${room.cleanerName === '鈴木' ? 'selected' : ''}>鈴木</option>
-                                <option value="山田" ${room.cleanerName === '山田' ? 'selected' : ''}>山田</option>
-                            </select>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            // 完了時刻と総所要時間を更新
-            const endTime = new Date(currentTime);
-            endTime.setMinutes(endTime.getMinutes() + totalMinutes);
-            document.getElementById('estimatedTime').textContent = 
-                `${endTime.getHours()}:${String(endTime.getMinutes()).padStart(2, '0')}`;
-            
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-            document.getElementById('totalTime').textContent = 
-                hours > 0 ? `${hours}時間${minutes}分` : `${minutes}分`;
-        }
-        
-        // AI清掃ルート内の変更確認
-        function confirmRouteCleaningChange(roomId, newStatus) {
-            const room = rooms.find(r => r.id === roomId);
-            pendingChange = { room, field: 'cleaningStatus', oldValue: room.cleaningStatus, newValue: newStatus };
-            document.getElementById('confirmMessage').textContent = 
-                `部屋${room.number}の清掃ステータスを「${room.cleaningStatus}」から「${newStatus}」に変更しますか？`;
-            document.getElementById('confirmModal').classList.add('active');
-        }
-        
-        function confirmRouteCleanerChange(roomId, newCleaner) {
-            const room = rooms.find(r => r.id === roomId);
-            pendingChange = { room, field: 'cleanerName', oldValue: room.cleanerName, newValue: newCleaner };
-            const oldName = room.cleanerName || '未定';
-            const newName = newCleaner || '未定';
-            document.getElementById('confirmMessage').textContent = 
-                `部屋${room.number}の清掃者を「${oldName}」から「${newName}」に変更しますか？`;
-            document.getElementById('confirmModal').classList.add('active');
-        }
-        
-        // AI清掃ルートトグル
-        function toggleAIRoute() {
-            aiRouteOpen = !aiRouteOpen;
-            const content = document.getElementById('aiRouteContent');
-            const icon = document.getElementById('aiToggleIcon');
-            
-            if (aiRouteOpen) {
-                content.classList.add('open');
-                icon.classList.add('open');
-                renderAIRoute();
-            } else {
-                content.classList.remove('open');
-                icon.classList.remove('open');
-            }
-        }
         
         // 清掃グラフトグル
         function toggleGraph() {
@@ -2251,6 +2118,7 @@
             const cleanerSelect = document.getElementById('cleanerSelect');
             selectedCleaner = cleanerSelect.value;
             renderRooms();
+            updateCounts(); // 清掃担当者フィルター後にカウント更新
         }
         
         // 日付更新
@@ -2291,13 +2159,28 @@
         
         // カウント更新
         function updateCounts() {
-            document.getElementById('count-未清掃').textContent = rooms.filter(r => r.cleaningStatus === '未清掃').length;
-            document.getElementById('count-清掃済').textContent = rooms.filter(r => r.cleaningStatus === '清掃済').length;
-            document.getElementById('count-点検済').textContent = rooms.filter(r => r.cleaningStatus === '点検済').length;
-            document.getElementById('count-DD').textContent = rooms.filter(r => r.cleaningStatus === 'DD').length;
-            document.getElementById('count-清掃不要').textContent = rooms.filter(r => r.cleaningStatus === '清掃不要').length;
-            document.getElementById('count-early').textContent = rooms.filter(r => r.earlyCheckIn).length;
-            document.getElementById('count-late').textContent = rooms.filter(r => r.lateCheckOut).length;
+            // 現在のフィルター状態に基づいて部屋をフィルタリング
+            let filteredRooms = [...rooms];
+            
+            // 清掃担当者フィルター
+            if (selectedCleaner) {
+                filteredRooms = filteredRooms.filter(room => {
+                    if (selectedCleaner === '未定') {
+                        return !room.cleanerName || room.cleanerName === '';
+                    } else {
+                        return room.cleanerName === selectedCleaner;
+                    }
+                });
+            }
+            
+            // フィルター済みの部屋数でカウント更新
+            document.getElementById('count-未清掃').textContent = filteredRooms.filter(r => r.cleaningStatus === '未清掃').length;
+            document.getElementById('count-清掃済').textContent = filteredRooms.filter(r => r.cleaningStatus === '清掃済').length;
+            document.getElementById('count-点検済').textContent = filteredRooms.filter(r => r.cleaningStatus === '点検済').length;
+            document.getElementById('count-DD').textContent = filteredRooms.filter(r => r.cleaningStatus === 'DD').length;
+            document.getElementById('count-清掃不要').textContent = filteredRooms.filter(r => r.cleaningStatus === '清掃不要').length;
+            document.getElementById('count-early').textContent = filteredRooms.filter(r => r.earlyCheckIn).length;
+            document.getElementById('count-late').textContent = filteredRooms.filter(r => r.lateCheckOut).length;
         }
         
         // 部屋一覧描画
