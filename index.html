@@ -1163,7 +1163,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px;
+            padding: 12px 16px;
             border-bottom: 1px solid #e5e7eb;
             background: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -2604,12 +2604,15 @@
             }
             
             // ヘッダーの週表示を更新
-            const weekStartStr = `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
+            const weekStartStr = `${weekStart.getMonth() + 1}月${weekStart.getDate()}日`;
             const weekEndDate = new Date(weekStart);
             weekEndDate.setDate(weekStart.getDate() + 6);
-            const weekEndStr = `${weekEndDate.getMonth() + 1}/${weekEndDate.getDate()}`;
-            document.querySelector('.weekly-calendar-title').textContent = 
-                `予約カレンダー (${weekStartStr} - ${weekEndStr})`;
+            const weekEndStr = `${weekEndDate.getMonth() + 1}月${weekEndDate.getDate()}日`;
+            
+            // タイトルとスライダー部分の両方を更新
+            document.querySelector('.weekly-calendar-title').textContent = '予約カレンダー';
+            document.getElementById('weekDisplay').textContent = 
+                `2025年${weekStartStr} - ${weekEndStr}`;
             
             // 日付ヘッダーを更新
             weekDates.forEach((date, index) => {
