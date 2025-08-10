@@ -2533,7 +2533,10 @@
             // ソート適用
             if (currentSort.type === 'room') {
                 filteredRooms.sort((a, b) => {
-                    const comparison = a.number.localeCompare(b.number);
+                    // 部屋番号を数値として比較
+                    const roomA = parseInt(a.number);
+                    const roomB = parseInt(b.number);
+                    const comparison = roomA - roomB;
                     return currentSort.direction === 'asc' ? comparison : -comparison;
                 });
             } else if (currentSort.type === 'type') {
