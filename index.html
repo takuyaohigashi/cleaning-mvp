@@ -1548,7 +1548,11 @@
         }
         
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .form-group-compact {
+            margin-bottom: 10px;
         }
         
         .form-label {
@@ -1560,14 +1564,14 @@
         
         .form-input, .form-select, .form-textarea {
             width: 100%;
-            padding: 8px 12px;
+            padding: 4px 8px;
             border: 1px solid #d1d5db;
             border-radius: 4px;
             font-size: 14px;
         }
         
         .form-static {
-            padding: 8px 12px;
+            padding: 4px 8px;
             background: #f3f4f6;
             border-radius: 4px;
             color: #374151;
@@ -1584,6 +1588,44 @@
         .image-upload-label {
             color: #6b7280;
             cursor: pointer;
+        }
+        
+        /* インライン表示用のスタイル */
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .form-group-inline {
+            flex: 1;
+        }
+        
+        .form-group-inline .form-label {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        
+        .form-group-inline .form-select,
+        .form-group-inline .form-static {
+            font-size: 13px;
+        }
+        
+        /* コンパクトな画像アップロード */
+        .image-upload-compact {
+            border: 2px dashed #d1d5db;
+            border-radius: 4px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .image-upload-label-compact {
+            color: #6b7280;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .btn {
@@ -1941,49 +1983,74 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">清掃ステータス</label>
-                    <select class="form-select" id="detailCleaningStatus">
-                        <option value="未清掃">未清掃</option>
-                        <option value="清掃済">清掃済</option>
-                        <option value="点検済">点検済</option>
-                        <option value="DD">DD</option>
-                        <option value="清掃不要">清掃不要</option>
-                    </select>
+                <!-- ステータス情報を同じ行に配置 -->
+                <div class="form-row">
+                    <div class="form-group-inline">
+                        <label class="form-label">清掃ステータス</label>
+                        <!-- 管理者用 -->
+                        <select class="form-select" id="detailCleaningStatus" style="display: none;">
+                            <option value="未清掃">未清掃</option>
+                            <option value="清掃済">清掃済</option>
+                            <option value="点検済">点検済</option>
+                            <option value="DD">DD</option>
+                            <option value="清掃不要">清掃不要</option>
+                        </select>
+                        <!-- 清掃者用 -->
+                        <div class="form-static" id="detailCleaningStatusStatic" style="display: none;"></div>
+                    </div>
+                    <div class="form-group-inline">
+                        <label class="form-label">部屋ステータス</label>
+                        <div class="form-static" id="detailRoomStatus"></div>
+                    </div>
+                    <div class="form-group-inline">
+                        <label class="form-label">清掃者</label>
+                        <!-- 管理者用 -->
+                        <select class="form-select" id="detailCleaner" style="display: none;">
+                            <option value="">担当者未定</option>
+                            <option value="田中">田中</option>
+                            <option value="佐藤">佐藤</option>
+                            <option value="鈴木">鈴木</option>
+                            <option value="山田">山田</option>
+                        </select>
+                        <!-- 清掃者用 -->
+                        <div class="form-static" id="detailCleanerStatic" style="display: none;"></div>
+                    </div>
                 </div>
+                
                 <div class="form-group">
-                    <label class="form-label">部屋ステータス</label>
-                    <div class="form-static" id="detailRoomStatus"></div>
+                    <label class="form-label">清掃報告</label>
+                    <textarea class="form-textarea" id="detailMemo" rows="4"></textarea>
                 </div>
+                
                 <div class="form-group">
-                    <label class="form-label">清掃者</label>
-                    <select class="form-select" id="detailCleaner">
-                        <option value="">担当者未定</option>
-                        <option value="田中">田中</option>
-                        <option value="佐藤">佐藤</option>
-                        <option value="鈴木">鈴木</option>
-                        <option value="山田">山田</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">画像</label>
-                    <div class="image-upload">
+                    <label class="form-label">写真</label>
+                    <div class="image-upload-compact">
                         <input type="file" accept="image/*" style="display: none;" id="imageUpload">
-                        <label for="imageUpload" class="image-upload-label">
-                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 8px;">
+                        <label for="imageUpload" class="image-upload-label-compact">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
-                            <div id="imageStatus">画像を追加</div>
+                            <div id="imageStatus" style="margin-top: 4px; font-size: 12px; color: #9ca3af;"></div>
                         </label>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">清掃メモ</label>
-                    <textarea class="form-textarea" id="detailMemo" rows="3"></textarea>
-                </div>
-                <div class="form-group">
+                
+                <div class="form-group-compact">
                     <label class="form-label">忘れ物</label>
-                    <textarea class="form-textarea" id="detailLostItem" rows="2"></textarea>
+                    <input type="text" class="form-input" id="detailLostItem">
+                </div>
+                
+                <div class="form-group-compact">
+                    <label class="form-label">忘れ物の写真</label>
+                    <div class="image-upload-compact">
+                        <input type="file" accept="image/*" style="display: none;" id="lostItemImageUpload">
+                        <label for="lostItemImageUpload" class="image-upload-label-compact">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            <div id="lostItemImageStatus" style="margin-top: 4px; font-size: 12px; color: #9ca3af;"></div>
+                        </label>
+                    </div>
                 </div>
                 <button class="btn btn-primary btn-full" onclick="saveRoomDetail()">保存</button>
             </div>
@@ -2727,10 +2794,29 @@
             
             document.getElementById('detailRoomNumber').textContent = room.number;
             document.getElementById('detailRoomStatus').textContent = room.roomStatus;
-            document.getElementById('detailCleaningStatus').value = room.cleaningStatus;
-            document.getElementById('detailCleaner').value = room.cleanerName;
             document.getElementById('detailMemo').value = room.memo || '';
             document.getElementById('detailLostItem').value = room.lostItem || '';
+            
+            // ユーザー種別に応じて表示を切り替え
+            if (currentUser === 'admin') {
+                // 管理者：編集可能なselect要素を表示
+                document.getElementById('detailCleaningStatus').style.display = 'block';
+                document.getElementById('detailCleaningStatusStatic').style.display = 'none';
+                document.getElementById('detailCleaner').style.display = 'block';
+                document.getElementById('detailCleanerStatic').style.display = 'none';
+                
+                document.getElementById('detailCleaningStatus').value = room.cleaningStatus;
+                document.getElementById('detailCleaner').value = room.cleanerName;
+            } else {
+                // 清掃者：読み取り専用のstatic表示
+                document.getElementById('detailCleaningStatus').style.display = 'none';
+                document.getElementById('detailCleaningStatusStatic').style.display = 'block';
+                document.getElementById('detailCleaner').style.display = 'none';
+                document.getElementById('detailCleanerStatic').style.display = 'block';
+                
+                document.getElementById('detailCleaningStatusStatic').textContent = room.cleaningStatus;
+                document.getElementById('detailCleanerStatic').textContent = room.cleanerName || '担当者未定';
+            }
             
             document.getElementById('roomDetailModal').classList.add('active');
             document.body.style.overflow = 'hidden'; // 背景スクロールを禁止
@@ -2888,6 +2974,14 @@
             if (e.target.files[0]) {
                 document.getElementById('imageStatus').textContent = '画像が選択されました';
                 document.getElementById('imageStatus').style.color = '#16a34a';
+            }
+        });
+        
+        // 忘れ物画像アップロード
+        document.getElementById('lostItemImageUpload').addEventListener('change', function(e) {
+            if (e.target.files[0]) {
+                document.getElementById('lostItemImageStatus').textContent = '画像が選択されました';
+                document.getElementById('lostItemImageStatus').style.color = '#16a34a';
             }
         });
         
