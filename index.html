@@ -105,12 +105,25 @@
         }
         
         .app-container.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
         
         .container {
-            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
             background: white;
+        }
+        
+        /* 固定ヘッダー部分 */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
         }
         
         /* ヘッダー */
@@ -852,9 +865,16 @@
             transform: scale(0.95);
         }
         
+        /* スクロール可能エリア */
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+        
         /* 部屋リスト */
         .room-list {
-            padding: 8px 16px 80px;
+            padding: 8px 16px;
         }
         
         .room-card {
@@ -1576,175 +1596,181 @@
     <!-- メインアプリケーション -->
     <div class="app-container" id="mainApp">
     <div class="container">
-        <!-- ヘッダー -->
-        <div class="header">
-            <div class="header-content">
-                <div class="date-selector">
-                    <button class="date-btn" onclick="previousDay()">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                    </button>
-                    <div class="date-display">
-                        <span id="currentDate">8月7日</span>
-                        <button onclick="showCalendar()" style="background: none; border: none; cursor: pointer; padding: 4px;">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        <!-- 固定ヘッダー部分 -->
+        <div class="fixed-header">
+            <!-- ヘッダー -->
+            <div class="header">
+                <div class="header-content">
+                    <div class="date-selector">
+                        <button class="date-btn" onclick="previousDay()">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="date-display">
+                            <span id="currentDate">8月7日</span>
+                            <button onclick="showCalendar()" style="background: none; border: none; cursor: pointer; padding: 4px;">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="date-btn" onclick="nextDay()">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
                         </button>
                     </div>
-                    <button class="date-btn" onclick="nextDay()">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="user-info">
+                        <span class="user-role" id="userRole">管理者</span>
+                        <button class="logout-btn" onclick="logout()">ログアウト</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 施設・清掃担当者選択 -->
+            <div class="selector-row">
+                <div class="selector-half">
+                    <select class="facility-dropdown" id="facilitySelect" onchange="changeFacility()">
+                        <option value="demo-hotel-a">デモホテルA</option>
+                        <option value="demo-hotel-b">デモホテルB</option>
+                        <option value="demo-hotel-c">デモホテルC</option>
+                    </select>
+                </div>
+                <div class="selector-half">
+                    <select class="facility-dropdown" id="cleanerSelect" onchange="filterByCleaner()">
+                        <option value="">清掃担当者</option>
+                        <option value="未定">担当者未定</option>
+                        <option value="田中">田中</option>
+                        <option value="佐藤">佐藤</option>
+                        <option value="鈴木">鈴木</option>
+                        <option value="山田">山田</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- 清掃グラフ -->
+            <div class="graph-section">
+                <div class="graph-header" onclick="toggleGraph()">
+                    <div class="graph-title">
+                        <svg class="graph-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M3 13h2v8H3zm4-8h2v16H7zm4-2h2v18h-2zm4 4h2v14h-2zm4-4h2v18h-2z"/>
+                        </svg>
+                        <span>週間清掃推移</span>
+                    </div>
+                    <svg class="toggle-icon" id="graphToggleIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+                <div class="graph-content" id="graphContent">
+                    <div class="graph-summary" id="graphSummary">今日は昨日より2部屋多く清掃が必要です</div>
+                    <div class="graph-scroll-container" id="graphScrollContainer">
+                        <div class="graph-container">
+                            <div class="graph-bars" id="graphBars"></div>
+                            <div class="graph-labels" id="graphLabels"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ステータスサマリー -->
+            <div class="status-summary">
+                <div class="status-scroll-container">
+                    <button class="scroll-arrow left" onclick="scrollStatusLeft()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="status-grid" id="statusGrid">
+                        <button class="status-btn" onclick="filterByStatus('未清掃')" id="filter-未清掃">
+                            <div class="status-content">
+                                <span>未清掃</span>
+                                <span class="status-count" id="count-未清掃">4</span>
+                            </div>
+                        </button>
+                        <button class="status-btn" onclick="filterByStatus('清掃済')" id="filter-清掃済">
+                            <div class="status-content">
+                                <span>清掃済</span>
+                                <span class="status-count" id="count-清掃済">3</span>
+                            </div>
+                        </button>
+                        <button class="status-btn" onclick="filterByStatus('点検済')" id="filter-点検済">
+                            <div class="status-content">
+                                <span>点検済</span>
+                                <span class="status-count" id="count-点検済">2</span>
+                            </div>
+                        </button>
+                        <button class="status-btn" onclick="filterByStatus('DD')" id="filter-DD">
+                            <div class="status-content">
+                                <span>DD</span>
+                                <span class="status-count" id="count-DD">2</span>
+                            </div>
+                        </button>
+                        <button class="status-btn" onclick="filterByStatus('清掃不要')" id="filter-清掃不要">
+                            <div class="status-content">
+                                <span>清掃不要</span>
+                                <span class="status-count" id="count-清掃不要">2</span>
+                            </div>
+                        </button>
+                        <button class="status-btn" onclick="filterByStatus('early')" id="filter-early">
+                            <div class="status-content">
+                                <span>アーリー</span>
+                                <span class="status-count" id="count-early">2</span>
+                            </div>
+                        </button>
+                        <button class="status-btn" onclick="filterByStatus('late')" id="filter-late">
+                            <div class="status-content">
+                                <span>レイト</span>
+                                <span class="status-count" id="count-late">2</span>
+                            </div>
+                        </button>
+                    </div>
+                    <button class="scroll-arrow right" onclick="scrollStatusRight()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </button>
                 </div>
-                <div class="user-info">
-                    <span class="user-role" id="userRole">管理者</span>
-                    <button class="logout-btn" onclick="logout()">ログアウト</button>
-                </div>
             </div>
-        </div>
-        
-        <!-- 施設・清掃担当者選択 -->
-        <div class="selector-row">
-            <div class="selector-half">
-                <select class="facility-dropdown" id="facilitySelect" onchange="changeFacility()">
-                    <option value="demo-hotel-a">デモホテルA</option>
-                    <option value="demo-hotel-b">デモホテルB</option>
-                    <option value="demo-hotel-c">デモホテルC</option>
-                </select>
-            </div>
-            <div class="selector-half">
-                <select class="facility-dropdown" id="cleanerSelect" onchange="filterByCleaner()">
-                    <option value="">清掃担当者</option>
-                    <option value="未定">担当者未定</option>
-                    <option value="田中">田中</option>
-                    <option value="佐藤">佐藤</option>
-                    <option value="鈴木">鈴木</option>
-                    <option value="山田">山田</option>
-                </select>
-            </div>
-        </div>
-        
-        <!-- 清掃グラフ -->
-        <div class="graph-section">
-            <div class="graph-header" onclick="toggleGraph()">
-                <div class="graph-title">
-                    <svg class="graph-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M3 13h2v8H3zm4-8h2v16H7zm4-2h2v18h-2zm4 4h2v14h-2zm4-4h2v18h-2z"/>
-                    </svg>
-                    <span>週間清掃推移</span>
-                </div>
-                <svg class="toggle-icon" id="graphToggleIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-            </div>
-            <div class="graph-content" id="graphContent">
-                <div class="graph-summary" id="graphSummary">今日は昨日より2部屋多く清掃が必要です</div>
-                <div class="graph-scroll-container" id="graphScrollContainer">
-                    <div class="graph-container">
-                        <div class="graph-bars" id="graphBars"></div>
-                        <div class="graph-labels" id="graphLabels"></div>
+            
+            <!-- フィルターバー -->
+            <div class="filter-bar">
+                <div class="filter-controls">
+                    <div class="floor-buttons">
+                        <button class="floor-btn" onclick="toggleFloor(1)" id="floor-1">1F</button>
+                        <button class="floor-btn" onclick="toggleFloor(2)" id="floor-2">2F</button>
+                        <button class="floor-btn" onclick="toggleFloor(3)" id="floor-3">3F</button>
+                        <button class="floor-btn" onclick="toggleFloor(4)" id="floor-4">4F</button>
+                        <button class="floor-btn" onclick="toggleFloor(5)" id="floor-5">5F</button>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ステータスサマリー -->
-        <div class="status-summary">
-            <div class="status-scroll-container">
-                <button class="scroll-arrow left" onclick="scrollStatusLeft()">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                </button>
-                <div class="status-grid" id="statusGrid">
-                    <button class="status-btn" onclick="filterByStatus('未清掃')" id="filter-未清掃">
-                        <div class="status-content">
-                            <span>未清掃</span>
-                            <span class="status-count" id="count-未清掃">4</span>
-                        </div>
-                    </button>
-                    <button class="status-btn" onclick="filterByStatus('清掃済')" id="filter-清掃済">
-                        <div class="status-content">
-                            <span>清掃済</span>
-                            <span class="status-count" id="count-清掃済">3</span>
-                        </div>
-                    </button>
-                    <button class="status-btn" onclick="filterByStatus('点検済')" id="filter-点検済">
-                        <div class="status-content">
-                            <span>点検済</span>
-                            <span class="status-count" id="count-点検済">2</span>
-                        </div>
-                    </button>
-                    <button class="status-btn" onclick="filterByStatus('DD')" id="filter-DD">
-                        <div class="status-content">
-                            <span>DD</span>
-                            <span class="status-count" id="count-DD">2</span>
-                        </div>
-                    </button>
-                    <button class="status-btn" onclick="filterByStatus('清掃不要')" id="filter-清掃不要">
-                        <div class="status-content">
-                            <span>清掃不要</span>
-                            <span class="status-count" id="count-清掃不要">2</span>
-                        </div>
-                    </button>
-                    <button class="status-btn" onclick="filterByStatus('early')" id="filter-early">
-                        <div class="status-content">
-                            <span>アーリー</span>
-                            <span class="status-count" id="count-early">2</span>
-                        </div>
-                    </button>
-                    <button class="status-btn" onclick="filterByStatus('late')" id="filter-late">
-                        <div class="status-content">
-                            <span>レイト</span>
-                            <span class="status-count" id="count-late">2</span>
-                        </div>
-                    </button>
-                </div>
-                <button class="scroll-arrow right" onclick="scrollStatusRight()">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        
-        <!-- フィルターバー -->
-        <div class="filter-bar">
-            <div class="filter-controls">
-                <div class="floor-buttons">
-                    <button class="floor-btn" onclick="toggleFloor(1)" id="floor-1">1F</button>
-                    <button class="floor-btn" onclick="toggleFloor(2)" id="floor-2">2F</button>
-                    <button class="floor-btn" onclick="toggleFloor(3)" id="floor-3">3F</button>
-                    <button class="floor-btn" onclick="toggleFloor(4)" id="floor-4">4F</button>
-                    <button class="floor-btn" onclick="toggleFloor(5)" id="floor-5">5F</button>
-                </div>
-                <div class="sort-buttons">
-                    <button class="sort-btn" onclick="toggleSort('room')" id="sort-room">
-                        <span>No</span>
-                        <svg class="sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="sort-room-icon">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
-                        </svg>
+                    <div class="sort-buttons">
+                        <button class="sort-btn" onclick="toggleSort('room')" id="sort-room">
+                            <span>No</span>
+                            <svg class="sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="sort-room-icon">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                            </svg>
                     </button>
                     <button class="sort-btn" onclick="toggleSort('type')" id="sort-type">
                         <span>Type</span>
                         <svg class="sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="sort-type-icon">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
                         </svg>
-                    </button>
+                        </button>
+                    </div>
                 </div>
+                <button class="calendar-btn" onclick="toggleWeeklyCalendar()">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </button>
             </div>
-            <button class="calendar-btn" onclick="toggleWeeklyCalendar()">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-            </button>
         </div>
         
-        <!-- 部屋リスト -->
-        <div class="room-list" id="roomList"></div>
+        <!-- スクロール可能エリア -->
+        <div class="scrollable-content">
+            <!-- 部屋リスト -->
+            <div class="room-list" id="roomList"></div>
+        </div>
         
         <!-- 週間カレンダービュー -->
         <div class="weekly-calendar" id="weeklyCalendar" style="display: none;">
