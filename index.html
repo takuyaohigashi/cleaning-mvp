@@ -2334,10 +2334,12 @@
             const day = String(currentDate.getDate()).padStart(2, '0');
             document.getElementById('calendarInput').value = `${year}-${month}-${day}`;
             document.getElementById('calendarModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // 背景スクロールを禁止
         }
         
         function closeCalendar() {
             document.getElementById('calendarModal').classList.remove('active');
+            document.body.style.overflow = ''; // 背景スクロールを復活
         }
         
         function selectDate() {
@@ -2407,10 +2409,12 @@
             document.getElementById('detailLostItem').value = room.lostItem || '';
             
             document.getElementById('roomDetailModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // 背景スクロールを禁止
         }
         
         function closeRoomDetail() {
             document.getElementById('roomDetailModal').classList.remove('active');
+            document.body.style.overflow = ''; // 背景スクロールを復活
             currentEditingRoom = null;
         }
         
@@ -2423,7 +2427,6 @@
                 
                 updateCounts();
                 renderRooms();
-                renderAIRoute(); // AI清掃ルートも更新
                 closeRoomDetail();
             }
         }
@@ -2435,6 +2438,7 @@
             document.getElementById('confirmMessage').textContent = 
                 `部屋${room.number}の清掃ステータスを「${room.cleaningStatus}」から「${newStatus}」に変更しますか？`;
             document.getElementById('confirmModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // 背景スクロールを禁止
         }
         
         function confirmCleanerChange(roomId, newCleaner) {
@@ -2445,6 +2449,7 @@
             document.getElementById('confirmMessage').textContent = 
                 `部屋${room.number}の清掃者を「${oldName}」から「${newName}」に変更しますか？`;
             document.getElementById('confirmModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // 背景スクロールを禁止
         }
         
         function confirmChange() {
@@ -2459,16 +2464,17 @@
                     pendingChange.room[pendingChange.field] = pendingChange.newValue;
                     updateCounts();
                     renderRooms();
-                    renderAIRoute(); // AI清掃ルートも更新
-                }
+                    }
             }
             document.getElementById('confirmModal').classList.remove('active');
+            document.body.style.overflow = ''; // 背景スクロールを復活
             pendingChange = null;
         }
         
         function cancelChange() {
             renderRooms();
             document.getElementById('confirmModal').classList.remove('active');
+            document.body.style.overflow = ''; // 背景スクロールを復活
             pendingChange = null;
         }
         
@@ -2480,6 +2486,7 @@
                 document.getElementById('confirmMessage').textContent = 
                     `部屋${room.number}の清掃を開始しますか？`;
                 document.getElementById('confirmModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // 背景スクロールを禁止
             }
         }
         
@@ -2490,6 +2497,7 @@
                 document.getElementById('confirmMessage').textContent = 
                     `部屋${room.number}の清掃を終了しますか？`;
                 document.getElementById('confirmModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // 背景スクロールを禁止
             }
         }
         
@@ -2500,6 +2508,7 @@
                 document.getElementById('confirmMessage').textContent = 
                     `部屋${room.number}を未清掃に戻しますか？`;
                 document.getElementById('confirmModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // 背景スクロールを禁止
             }
         }
         
@@ -2532,7 +2541,6 @@
                 // カウント更新
                 updateCounts();
                 renderRooms();
-                renderAIRoute();
                 
             }
         }
@@ -2547,7 +2555,6 @@
                 // カウント更新
                 updateCounts();
                 renderRooms();
-                renderAIRoute();
                 
             }
         }
@@ -2566,6 +2573,7 @@
         function toggleWeeklyCalendar() {
             const calendar = document.getElementById('weeklyCalendar');
             calendar.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // 背景スクロールを禁止
             currentWeekOffset = 0; // カレンダーを開くたびに今週にリセット
             generateWeeklyCalendarData();
         }
@@ -2573,6 +2581,7 @@
         function closeWeeklyCalendar() {
             const calendar = document.getElementById('weeklyCalendar');
             calendar.style.display = 'none';
+            document.body.style.overflow = ''; // 背景スクロールを復活
         }
 
         function previousWeek() {
