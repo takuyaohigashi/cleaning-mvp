@@ -2062,7 +2062,7 @@
             '未清掃': 'cleaning-red',
             '清掃済': 'cleaning-green',
             '点検済': 'cleaning-blue',
-            'DD': 'cleaning-gray',  // DDも清掃不要と同様に薄いグレーで統一
+            'DD': 'cleaning-gray',
             '清掃不要': 'cleaning-gray'
         };
         
@@ -2148,9 +2148,11 @@
                         earlyCheckIn = fixedEarlyRooms.includes(roomNumber);
                         lateCheckOut = fixedLateRooms.includes(roomNumber);
                         
-                        // 固定でない部屋は通常の確率
-                        if (!earlyCheckIn && !lateCheckOut) {
+                        // 固定でない部屋は通常の確率を追加適用
+                        if (!earlyCheckIn) {
                             earlyCheckIn = Math.random() < 0.04; // 約3-5％の中央値4%
+                        }
+                        if (!lateCheckOut) {
                             lateCheckOut = Math.random() < 0.10;  // 約8-12％の中央値10%
                         }
                     } else {
@@ -2513,8 +2515,7 @@
             // イン表示の判定
             const shouldShowCheckIn = !(
                 room.roomStatus === 'アウト済' || // アウト済はイン表示不要
-                (room.roomStatus === '滞在中' && room.cleaningStatus === '清掃済') || // 滞在中で清掃済はイン表示不要
-                room.roomStatus === 'イン前' // イン前はアウト翌日なのでイン表示不要
+                room.roomStatus === '滞在中' // 滞在中はすでにチェックイン済みなので表示不要
             );
             
             if (shouldShowCheckIn) {
@@ -2530,7 +2531,8 @@
             // アウト表示の判定
             const shouldShowCheckOut = !(
                 room.roomStatus === 'イン前' || // イン前はアウト翌日なので表示不要
-                (room.roomStatus === '滞在中' && room.cleaningStatus === '清掃済') // 滞在中で清掃済はアウト表示不要
+                (room.roomStatus === '滞在中' && room.cleaningStatus === '清掃済') || // 滞在中で清掃済はアウト表示不要
+                (room.roomStatus === '滞在中' && room.cleaningStatus === 'DD') // 滞在中でDDは連泊確定のためアウト表示不要
             );
             
             if (shouldShowCheckOut) {
@@ -2568,8 +2570,20 @@
             document.getElementById('count-点検済').textContent = filteredRooms.filter(r => r.cleaningStatus === '点検済').length;
             document.getElementById('count-DD').textContent = filteredRooms.filter(r => r.cleaningStatus === 'DD').length;
             document.getElementById('count-清掃不要').textContent = filteredRooms.filter(r => r.cleaningStatus === '清掃不要').length;
-            document.getElementById('count-early').textContent = filteredRooms.filter(r => r.earlyCheckIn).length;
-            document.getElementById('count-late').textContent = filteredRooms.filter(r => r.lateCheckOut).length;
+            // アーリー・レイトは実際にタグが表示される部屋のみカウント
+            document.getElementById('count-early').textContent = filteredRooms.filter(r => 
+                r.earlyCheckIn === true && 
+                r.roomStatus !== '未使用' && 
+                r.roomStatus !== 'アウト済' && 
+                r.roomStatus !== '滞在中'
+            ).length;
+            document.getElementById('count-late').textContent = filteredRooms.filter(r => 
+                r.lateCheckOut === true && 
+                r.roomStatus !== '未使用' && 
+                r.roomStatus !== 'イン前' && 
+                !(r.roomStatus === '滞在中' && r.cleaningStatus === '清掃済') &&
+                !(r.roomStatus === '滞在中' && r.cleaningStatus === 'DD')
+            ).length;
         }
         
         // 部屋一覧描画
@@ -2581,20 +2595,29 @@
                 filteredRooms = filteredRooms.filter(room => selectedFloors.includes(room.floor));
             }
             
-            // ステータスフィルター（複数選択対応）
+            // ステータスフィルター（複数選択対応、AND条件）
             if (activeFilters.length > 0) {
                 filteredRooms = filteredRooms.filter(room => {
-                    return activeFilters.some(filter => {
+                    const matchesAllFilters = activeFilters.every(filter => {
                         if (filter === 'early') {
-                            // アーリーは予約がある部屋（未使用以外）でアーリーチェックインのもの
-                            return room.earlyCheckIn && room.roomStatus !== '未使用';
+                            // アーリータグが実際に表示される部屋のみ（未使用、アウト済、滞在中は除外）
+                            return room.earlyCheckIn === true && 
+                                   room.roomStatus !== '未使用' && 
+                                   room.roomStatus !== 'アウト済' && 
+                                   room.roomStatus !== '滞在中';
                         } else if (filter === 'late') {
-                            // レイトは予約がある部屋（未使用以外）でレイトチェックアウトのもの
-                            return room.lateCheckOut && room.roomStatus !== '未使用';
+                            // レイトタグが実際に表示される部屋のみ（未使用、イン前、滞在中で清掃済、滞在中でDDは除外）
+                            return room.lateCheckOut === true && 
+                                   room.roomStatus !== '未使用' && 
+                                   room.roomStatus !== 'イン前' && 
+                                   !(room.roomStatus === '滞在中' && room.cleaningStatus === '清掃済') &&
+                                   !(room.roomStatus === '滞在中' && room.cleaningStatus === 'DD');
                         } else {
                             return room.cleaningStatus === filter;
                         }
                     });
+                    
+                    return matchesAllFilters;
                 });
             }
             
@@ -2719,7 +2742,7 @@
             }
         }
         
-        // フィルター
+        // フィルター（複数選択対応、AND条件）
         function filterByStatus(status) {
             const buttons = {
                 '未清掃': 'active-red',
@@ -2734,20 +2757,14 @@
             const btn = document.getElementById(`filter-${status}`);
             const index = activeFilters.indexOf(status);
             
-            // まず全てのフィルターボタンをリセット
-            Object.keys(buttons).forEach(filterStatus => {
-                const filterBtn = document.getElementById(`filter-${filterStatus}`);
-                if (filterBtn) {
-                    filterBtn.className = 'status-btn';
-                }
-            });
-            
             if (index > -1) {
-                // 既に選択されている場合は削除（全フィルターを解除）
-                activeFilters = [];
+                // 既に選択されている場合は削除
+                activeFilters.splice(index, 1);
+                btn.classList.remove(buttons[status]);
+                btn.className = 'status-btn'; // リセット
             } else {
-                // 新しいフィルターを単独で設定
-                activeFilters = [status];
+                // 選択されていない場合は追加
+                activeFilters.push(status);
                 btn.classList.add(buttons[status]);
             }
             
