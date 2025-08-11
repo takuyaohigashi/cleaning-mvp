@@ -777,20 +777,21 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
+            width: 100%;
         }
         
         .floor-buttons-container {
             display: flex;
             align-items: center;
-            flex: 1;
-            max-width: 220px; /* フロアボタンの表示幅 */
+            flex: 0 0 auto;
+            max-width: 220px;
         }
         
         .right-controls {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-left: auto; /* 右端に寄せる */
+            margin-left: auto;
         }
         
         .floor-buttons {
@@ -802,7 +803,6 @@
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none; /* Firefox */
             -ms-overflow-style: none; /* IE */
-            flex: 1;
         }
         
         .floor-buttons::-webkit-scrollbar {
@@ -1842,7 +1842,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
                                 </svg>
                             </button>
-                            <button class="sort-btn" onclick="toggleSort('type')" id="sort-type">
+                            <button class="sort-btn" onclick="toggleSort('type')" id="sort-type" style="display: none;">
                                 <span>Type</span>
                                 <svg class="sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="sort-type-icon">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
@@ -3303,6 +3303,12 @@
             if (graphSection) {
                 graphSection.style.display = 'block';
             }
+            
+            // Typeソートボタンを表示
+            const typeSortBtn = document.getElementById('sort-type');
+            if (typeSortBtn) {
+                typeSortBtn.style.display = 'flex';
+            }
         }
         
         function showCleanerFeatures() {
@@ -3317,6 +3323,12 @@
             const graphSection = document.querySelector('.graph-section');
             if (graphSection) {
                 graphSection.style.display = 'none';
+            }
+            
+            // Typeソートボタンを非表示
+            const typeSortBtn = document.getElementById('sort-type');
+            if (typeSortBtn) {
+                typeSortBtn.style.display = 'none';
             }
         }
 
