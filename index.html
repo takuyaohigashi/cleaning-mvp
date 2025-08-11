@@ -2095,9 +2095,9 @@
         
         const STATUS_CLASS_MAP = {
             '未使用': 'unused',
-            'C/I前': 'before-ci',
+            'イン前': 'before-ci',
             '滞在中': 'staying',
-            'C/O済': 'after-co'
+            'アウト済': 'after-co'
         };
         
         const CLEANING_CLASS_MAP = {
@@ -2137,7 +2137,7 @@
         function generateRooms(hotelType, floors, roomsPerFloor) {
             const rooms = [];
             const roomTypes = ['シングル', 'ダブル', 'ツイン', 'スイート'];
-            const roomStatuses = ['未使用', 'C/I前', '滞在中', 'C/O済'];
+            const roomStatuses = ['未使用', 'イン前', '滞在中', 'アウト済'];
             const cleaningStatuses = ['未清掃', '清掃済', '点検済', 'DD', '清掃不要'];
             const cleaners = hotelData[hotelType].cleaners;
             
@@ -2166,10 +2166,10 @@
                     const lateCheckOut = Math.random() < 0.3;
                     let checkInTime = '', checkOutTime = '';
                     
-                    if (roomStatus === 'C/O前' || roomStatus === '滞在中') {
+                    if (roomStatus === 'イン前' || roomStatus === '滞在中') {
                         checkInTime = earlyCheckIn ? '13:00' : '15:00';
                     }
-                    if (roomStatus === 'C/O済' || roomStatus === '滞在中') {
+                    if (roomStatus === 'アウト済' || roomStatus === '滞在中') {
                         const hours = lateCheckOut ? 12 : Math.floor(Math.random() * 3) + 9;
                         const minutes = Math.floor(Math.random() * 6) * 10;
                         checkOutTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
@@ -2511,23 +2511,23 @@
             
             const timeDisplayItems = [];
             
-            // C/I表示
-            const hasCheckIn = room.checkInTime && (room.roomStatus === 'C/I前' || room.roomStatus === 'C/O済');
+            // イン表示
+            const hasCheckIn = room.checkInTime && (room.roomStatus === 'イン前' || room.roomStatus === 'アウト済');
             const earlyTag = room.earlyCheckIn ? '<span class="room-tag tag-blue">アーリー</span>' : '';
             const checkInTime = hasCheckIn ? room.checkInTime : '-';
             timeDisplayItems.push(`<div class="time-display-row">
                 <div class="time-tag-col">${earlyTag}</div>
-                <div class="time-label-col">C/I:</div>
+                <div class="time-label-col">イン:</div>
                 <div class="time-value-col">${checkInTime}</div>
             </div>`);
             
-            // C/O表示
-            const hasCheckOut = room.checkOutTime && (room.roomStatus === 'C/O済' || room.roomStatus === '滞在中' || room.roomStatus === 'C/I前');
+            // アウト表示
+            const hasCheckOut = room.checkOutTime && (room.roomStatus === 'アウト済' || room.roomStatus === '滞在中' || room.roomStatus === 'イン前');
             const lateTag = room.lateCheckOut ? '<span class="room-tag tag-purple">レイト</span>' : '';
             const checkOutTime = hasCheckOut ? room.checkOutTime : '-';
             timeDisplayItems.push(`<div class="time-display-row">
                 <div class="time-tag-col">${lateTag}</div>
-                <div class="time-label-col">C/O:</div>
+                <div class="time-label-col">アウト:</div>
                 <div class="time-value-col">${checkOutTime}</div>
             </div>`);
             
@@ -2632,11 +2632,11 @@
                 let cleaningActionsHtml = '';
                 if (currentUser === 'cleaner') {
                     const showStartBtn = room.cleaningStatus === '未清掃' && 
-                                       (room.roomStatus === 'C/O済' || room.roomStatus === '未使用') &&
+                                       (room.roomStatus === 'アウト済' || room.roomStatus === '未使用') &&
                                        !room.isCleaningInProgress;
                     const showEndBtn = room.isCleaningInProgress;  // 清掃中なら終了ボタンを表示
                     const showResetBtn = room.cleaningStatus === '清掃済' && 
-                                        (room.roomStatus === 'C/O済' || room.roomStatus === '未使用') &&
+                                        (room.roomStatus === 'アウト済' || room.roomStatus === '未使用') &&
                                         !room.isCleaningInProgress;  // 清掃済みなら未清掃に戻すボタンを表示
                     
                     if (showStartBtn || showEndBtn || showResetBtn) {
