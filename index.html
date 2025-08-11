@@ -1032,7 +1032,7 @@
         
         .time-display-row {
             display: grid;
-            grid-template-columns: 50px 25px 35px;
+            grid-template-columns: 45px 35px 35px;
             gap: 1px;
             margin-bottom: 2px;
             justify-content: end;
@@ -1045,13 +1045,13 @@
         
         .time-tag-col {
             text-align: right;
-            min-width: 50px;
+            min-width: 45px;
         }
         
         .time-label-col {
             text-align: center;
             white-space: nowrap;
-            min-width: 25px;
+            min-width: 35px;
         }
         
         .time-value-col {
@@ -1079,7 +1079,7 @@
         }
         
         .room-status {
-            padding: 4px 12px;
+            padding: 4px 8px;
             font-size: 16px;
             font-weight: 600;
             border-radius: 6px;
@@ -1121,7 +1121,7 @@
         
         .room-tag {
             font-size: 10px;
-            padding: 2px 6px;
+            padding: 2px 3px;
             border-radius: 4px;
             font-weight: 500;
             white-space: nowrap;
@@ -1135,48 +1135,6 @@
         .tag-purple {
             background: #fecaca;
             color: #dc2626;
-        }
-        
-        .cleaning-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-        }
-        
-        .cleaning-btn {
-            padding: 4px 8px;
-            font-size: 16px;
-            font-weight: 600;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        
-        .cleaning-btn.start {
-            background: #3b82f6;
-            color: white;
-        }
-        
-        .cleaning-btn.start:hover {
-            background: #2563eb;
-        }
-        
-        .cleaning-btn.end {
-            background: #10b981;
-            color: white;
-        }
-        
-        .cleaning-btn.end:hover {
-            background: #059669;
-        }
-        
-        .cleaning-btn.reset {
-            background: #f59e0b;
-            color: white;
-        }
-        
-        .cleaning-btn.reset:hover {
-            background: #d97706;
         }
         
         
@@ -2628,27 +2586,6 @@
                 // チェックイン・チェックアウト時間の表示用文字列を作成（右カラム用）
                 const timeDisplayHtml = createTimeDisplay(room);
                 
-                // 清掃開始・終了ボタンの表示条件
-                let cleaningActionsHtml = '';
-                if (currentUser === 'cleaner') {
-                    const showStartBtn = room.cleaningStatus === '未清掃' && 
-                                       (room.roomStatus === 'アウト済' || room.roomStatus === '未使用') &&
-                                       !room.isCleaningInProgress;
-                    const showEndBtn = room.isCleaningInProgress;  // 清掃中なら終了ボタンを表示
-                    const showResetBtn = room.cleaningStatus === '清掃済' && 
-                                        (room.roomStatus === 'アウト済' || room.roomStatus === '未使用') &&
-                                        !room.isCleaningInProgress;  // 清掃済みなら未清掃に戻すボタンを表示
-                    
-                    if (showStartBtn || showEndBtn || showResetBtn) {
-                        cleaningActionsHtml = `
-                            <div class="cleaning-actions">
-                                ${showStartBtn ? `<button class="cleaning-btn start" onclick="event.stopPropagation(); confirmStartCleaning(${room.id})">清掃開始</button>` : ''}
-                                ${showEndBtn ? `<button class="cleaning-btn end" onclick="event.stopPropagation(); confirmEndCleaning(${room.id})">清掃終了</button>` : ''}
-                                ${showResetBtn ? `<button class="cleaning-btn reset" onclick="event.stopPropagation(); confirmResetCleaning(${room.id})">未清掃に戻す</button>` : ''}
-                            </div>
-                        `;
-                    }
-                }
 
                 return `
                     <div class="room-card ${cardClass}" onclick="openRoomDetail(${room.id})">
@@ -2665,35 +2602,29 @@
                             </div>
                         </div>
                         <div class="room-controls">
-                            ${currentUser === 'cleaner' ? 
-                                `<div class="control-item">
-                                    <span class="cleaning-status-text ${cleaningClass}">${room.cleaningStatus}</span>
-                                 </div>
-                                 ${cleaningActionsHtml ? `<div class="control-item">${cleaningActionsHtml}</div>` : '<div class="control-item"></div>'}
-                                 <div class="control-item">
-                                    <span class="cleaner-name-text">${room.cleanerName || '担当者未定'}</span>
-                                 </div>` :
-                                `<div class="control-item">
-                                    <select class="select ${cleaningClass}" onclick="event.stopPropagation()" onchange="confirmCleaningStatusChange(${room.id}, this.value)">
-                                        <option value="未清掃" ${room.cleaningStatus === '未清掃' ? 'selected' : ''}>未清掃</option>
-                                        <option value="清掃済" ${room.cleaningStatus === '清掃済' ? 'selected' : ''}>清掃済</option>
-                                        <option value="点検済" ${room.cleaningStatus === '点検済' ? 'selected' : ''}>点検済</option>
-                                        <option value="DD" ${room.cleaningStatus === 'DD' ? 'selected' : ''}>DD</option>
-                                        <option value="清掃不要" ${room.cleaningStatus === '清掃不要' ? 'selected' : ''}>清掃不要</option>
-                                    </select>
-                                 </div>
-                                 <div class="control-item">
-                                    <!-- 管理者画面では中央列は空 -->
-                                 </div>
-                                 <div class="control-item">
-                                    <select class="select" onclick="event.stopPropagation()" onchange="confirmCleanerChange(${room.id}, this.value)">
+                            <div class="control-item">
+                                <select class="select ${cleaningClass}" onclick="event.stopPropagation()" onchange="confirmCleaningStatusChange(${room.id}, this.value)">
+                                    <option value="未清掃" ${room.cleaningStatus === '未清掃' ? 'selected' : ''}>未清掃</option>
+                                    <option value="清掃済" ${room.cleaningStatus === '清掃済' ? 'selected' : ''}>清掃済</option>
+                                    <option value="点検済" ${room.cleaningStatus === '点検済' ? 'selected' : ''}>点検済</option>
+                                    <option value="DD" ${room.cleaningStatus === 'DD' ? 'selected' : ''}>DD</option>
+                                    <option value="清掃不要" ${room.cleaningStatus === '清掃不要' ? 'selected' : ''}>清掃不要</option>
+                                </select>
+                             </div>
+                             <div class="control-item">
+                                <!-- 中央列は空 -->
+                             </div>
+                             <div class="control-item">
+                                ${currentUser === 'cleaner' ? 
+                                    `<span class="cleaner-name-text">${room.cleanerName || '担当者未定'}</span>` :
+                                    `<select class="select" onclick="event.stopPropagation()" onchange="confirmCleanerChange(${room.id}, this.value)">
                                         <option value="" ${!room.cleanerName ? 'selected' : ''}>担当者未定</option>
                                         ${hotelData[currentHotel].cleaners.map(cleaner => 
                                             `<option value="${cleaner}" ${room.cleanerName === cleaner ? 'selected' : ''}>${cleaner}</option>`
                                         ).join('')}
-                                    </select>
-                                 </div>`
-                            }
+                                    </select>`
+                                }
+                             </div>
                         </div>
                     </div>
                 `;
@@ -2798,7 +2729,7 @@
             
             // ユーザー種別に応じて表示を切り替え
             if (currentUser === 'admin') {
-                // 管理者：編集可能なselect要素を表示
+                // 管理者：編集可能なselect要素を表示（清掃ステータスと清掃者）
                 document.getElementById('detailCleaningStatus').style.display = 'block';
                 document.getElementById('detailCleaningStatusStatic').style.display = 'none';
                 document.getElementById('detailCleaner').style.display = 'block';
@@ -2807,13 +2738,13 @@
                 document.getElementById('detailCleaningStatus').value = room.cleaningStatus;
                 document.getElementById('detailCleaner').value = room.cleanerName;
             } else {
-                // 清掃者：読み取り専用のstatic表示
-                document.getElementById('detailCleaningStatus').style.display = 'none';
-                document.getElementById('detailCleaningStatusStatic').style.display = 'block';
+                // 清掃者：清掃ステータスは編集可能、清掃者は読み取り専用
+                document.getElementById('detailCleaningStatus').style.display = 'block';
+                document.getElementById('detailCleaningStatusStatic').style.display = 'none';
                 document.getElementById('detailCleaner').style.display = 'none';
                 document.getElementById('detailCleanerStatic').style.display = 'block';
                 
-                document.getElementById('detailCleaningStatusStatic').textContent = room.cleaningStatus;
+                document.getElementById('detailCleaningStatus').value = room.cleaningStatus;
                 document.getElementById('detailCleanerStatic').textContent = room.cleanerName || '担当者未定';
             }
             
