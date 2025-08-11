@@ -1759,6 +1759,12 @@
                         </svg>
                     </button>
                     <div class="status-grid" id="statusGrid">
+                        <button class="status-btn" onclick="filterByStatus('cleanable')" id="filter-cleanable">
+                            <div class="status-content">
+                                <span>清掃可能</span>
+                                <span class="status-count" id="count-cleanable">0</span>
+                            </div>
+                        </button>
                         <button class="status-btn" onclick="filterByStatus('未清掃')" id="filter-未清掃">
                             <div class="status-content">
                                 <span>未清掃</span>
@@ -2566,6 +2572,11 @@
             }
             
             // フィルター済みの部屋数でカウント更新
+            // 清掃可能：未清掃かつ（アウト済またはイン前）
+            document.getElementById('count-cleanable').textContent = filteredRooms.filter(r => 
+                r.cleaningStatus === '未清掃' && 
+                (r.roomStatus === 'アウト済' || r.roomStatus === 'イン前')
+            ).length;
             document.getElementById('count-未清掃').textContent = filteredRooms.filter(r => r.cleaningStatus === '未清掃').length;
             document.getElementById('count-清掃済').textContent = filteredRooms.filter(r => r.cleaningStatus === '清掃済').length;
             document.getElementById('count-点検済').textContent = filteredRooms.filter(r => r.cleaningStatus === '点検済').length;
@@ -2600,7 +2611,11 @@
             if (activeFilters.length > 0) {
                 filteredRooms = filteredRooms.filter(room => {
                     const matchesAnyFilter = activeFilters.some(filter => {
-                        if (filter === 'early') {
+                        if (filter === 'cleanable') {
+                            // 清掃可能：未清掃かつ（アウト済またはイン前）
+                            return room.cleaningStatus === '未清掃' && 
+                                   (room.roomStatus === 'アウト済' || room.roomStatus === 'イン前');
+                        } else if (filter === 'early') {
                             // アーリータグが実際に表示される部屋のみ（未使用、アウト済、滞在中は除外）
                             return room.earlyCheckIn === true && 
                                    room.roomStatus !== '未使用' && 
@@ -2746,6 +2761,7 @@
         // フィルター（複数選択対応、OR条件）
         function filterByStatus(status) {
             const buttons = {
+                'cleanable': 'active-orange',  // 清掃可能はオレンジ色
                 '未清掃': 'active-red',
                 '清掃済': 'active-green',
                 '点検済': 'active-blue',
