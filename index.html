@@ -336,9 +336,9 @@
         }
         
         .status-btn.active-green {
-            background: #f0fdf4;
-            border-color: #86efac;
-            color: #15803d;
+            background: #e0f2fe;  /* 薄い水色 */
+            border-color: #7dd3fc;  /* 薄い水色の枠線 */
+            color: #0369a1;  /* 濃い水色の文字 */
         }
         
         .status-btn.active-gray {
@@ -546,8 +546,8 @@
         }
         
         .route-select.cleaning-green {
-            border-color: #86efac;
-            background: #f0fdf4;
+            border-color: #7dd3fc;  /* 薄い水色の枠線 */
+            background: #e0f2fe;  /* 薄い水色 */
         }
         
         .route-select.cleaning-gray {
@@ -980,8 +980,8 @@
         
         .room-card.status-green,
         .room-card.status-green:hover {
-            background: #f0fdf4 !important;
-            border-color: #bbf7d0 !important;
+            background: #e0f2fe !important;  /* 薄い水色（点検済みより薄い） */
+            border-color: #7dd3fc !important;  /* 薄い水色の枠線 */
         }
         
         .room-card.status-blue,
@@ -1176,8 +1176,8 @@
         }
         
         .select.cleaning-green {
-            border-color: #86efac;
-            background: #f0fdf4;
+            border-color: #7dd3fc;  /* 薄い水色の枠線 */
+            background: #e0f2fe;  /* 薄い水色 */
         }
         
         .select.cleaning-gray {
@@ -2596,10 +2596,10 @@
                 filteredRooms = filteredRooms.filter(room => selectedFloors.includes(room.floor));
             }
             
-            // ステータスフィルター（複数選択対応、AND条件）
+            // ステータスフィルター（複数選択対応、OR条件）
             if (activeFilters.length > 0) {
                 filteredRooms = filteredRooms.filter(room => {
-                    const matchesAllFilters = activeFilters.every(filter => {
+                    const matchesAnyFilter = activeFilters.some(filter => {
                         if (filter === 'early') {
                             // アーリータグが実際に表示される部屋のみ（未使用、アウト済、滞在中は除外）
                             return room.earlyCheckIn === true && 
@@ -2618,7 +2618,7 @@
                         }
                     });
                     
-                    return matchesAllFilters;
+                    return matchesAnyFilter;
                 });
             }
             
@@ -2743,7 +2743,7 @@
             }
         }
         
-        // フィルター（複数選択対応、AND条件）
+        // フィルター（複数選択対応、OR条件）
         function filterByStatus(status) {
             const buttons = {
                 '未清掃': 'active-red',
