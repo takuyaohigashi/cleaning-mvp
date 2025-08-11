@@ -1049,7 +1049,7 @@
         }
         
         .time-label-col {
-            text-align: center;
+            text-align: right;
             white-space: nowrap;
             min-width: 35px;
         }
@@ -2603,18 +2603,6 @@
                         </div>
                         <div class="room-controls">
                             <div class="control-item">
-                                <select class="select ${cleaningClass}" onclick="event.stopPropagation()" onchange="confirmCleaningStatusChange(${room.id}, this.value)">
-                                    <option value="未清掃" ${room.cleaningStatus === '未清掃' ? 'selected' : ''}>未清掃</option>
-                                    <option value="清掃済" ${room.cleaningStatus === '清掃済' ? 'selected' : ''}>清掃済</option>
-                                    <option value="点検済" ${room.cleaningStatus === '点検済' ? 'selected' : ''}>点検済</option>
-                                    <option value="DD" ${room.cleaningStatus === 'DD' ? 'selected' : ''}>DD</option>
-                                    <option value="清掃不要" ${room.cleaningStatus === '清掃不要' ? 'selected' : ''}>清掃不要</option>
-                                </select>
-                             </div>
-                             <div class="control-item">
-                                <!-- 中央列は空 -->
-                             </div>
-                             <div class="control-item">
                                 ${currentUser === 'cleaner' ? 
                                     `<span class="cleaner-name-text">${room.cleanerName || '担当者未定'}</span>` :
                                     `<select class="select" onclick="event.stopPropagation()" onchange="confirmCleanerChange(${room.id}, this.value)">
@@ -2624,6 +2612,18 @@
                                         ).join('')}
                                     </select>`
                                 }
+                             </div>
+                             <div class="control-item">
+                                <select class="select ${cleaningClass}" onclick="event.stopPropagation()" onchange="confirmCleaningStatusChange(${room.id}, this.value)">
+                                    <option value="未清掃" ${room.cleaningStatus === '未清掃' ? 'selected' : ''}>未清掃</option>
+                                    <option value="清掃済" ${room.cleaningStatus === '清掃済' ? 'selected' : ''}>清掃済</option>
+                                    <option value="点検済" ${room.cleaningStatus === '点検済' ? 'selected' : ''}>点検済</option>
+                                    <option value="DD" ${room.cleaningStatus === 'DD' ? 'selected' : ''}>DD</option>
+                                    <option value="清掃不要" ${room.cleaningStatus === '清掃不要' ? 'selected' : ''}>清掃不要</option>
+                                </select>
+                             </div>
+                             <div class="control-item">
+                                <!-- 3列目は空 -->
                              </div>
                         </div>
                     </div>
