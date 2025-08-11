@@ -2048,7 +2048,7 @@
             '未清掃': 'status-red',
             '清掃済': 'status-green',
             '点検済': 'status-blue',
-            'DD': 'status-purple'
+            'DD': 'status-gray'  // DDも清掃不要と同様に薄いグレーで統一
         };
         
         const STATUS_CLASS_MAP = {
@@ -2062,7 +2062,7 @@
             '未清掃': 'cleaning-red',
             '清掃済': 'cleaning-green',
             '点検済': 'cleaning-blue',
-            'DD': 'cleaning-purple',
+            'DD': 'cleaning-gray',  // DDも清掃不要と同様に薄いグレーで統一
             '清掃不要': 'cleaning-gray'
         };
         
@@ -2099,6 +2099,10 @@
             const cleaningStatuses = ['未清掃', '清掃済', '点検済', 'DD', '清掃不要'];
             const cleaners = hotelData[hotelType].cleaners;
             
+            // プロトタイプ用：小規模ホテルでアーリー・レイト予約を固定で設定
+            const fixedEarlyRooms = hotelType === 'small' ? ['102', '203', '401'] : [];
+            const fixedLateRooms = hotelType === 'small' ? ['101', '205', '304', '402', '503'] : [];
+            
             for (let floor = 1; floor <= floors; floor++) {
                 for (let room = 1; room <= roomsPerFloor; room++) {
                     const roomNumber = `${floor}${room.toString().padStart(2, '0')}`;
@@ -2112,22 +2116,59 @@
                     else if (rand < 0.95) roomType = 'ツイン';
                     else roomType = 'スイート';
                     
-                    // ステータスをランダムに設定
+                    // 部屋ステータスをランダムに設定
                     const roomStatus = roomStatuses[Math.floor(Math.random() * roomStatuses.length)];
-                    const cleaningStatus = cleaningStatuses[Math.floor(Math.random() * cleaningStatuses.length)];
+                    
+                    // 部屋ステータスに応じて清掃ステータスを設定
+                    let cleaningStatus;
+                    if (roomStatus === 'アウト済') {
+                        // アウト済は必ず未清掃
+                        cleaningStatus = '未清掃';
+                    } else if (roomStatus === 'イン前') {
+                        // イン前は未清掃、清掃済、点検済のいずれか
+                        const inBeforeStatuses = ['未清掃', '清掃済', '点検済'];
+                        cleaningStatus = inBeforeStatuses[Math.floor(Math.random() * inBeforeStatuses.length)];
+                    } else if (roomStatus === '滞在中') {
+                        // 滞在中は清掃済またはDD
+                        const stayingStatuses = ['清掃済', 'DD'];
+                        cleaningStatus = stayingStatuses[Math.floor(Math.random() * stayingStatuses.length)];
+                    } else {
+                        // 未使用の場合は清掃不要
+                        cleaningStatus = '清掃不要';
+                    }
                     
                     // 清掃担当者をランダムに設定（空の場合もあり）
                     const cleanerName = Math.random() < 0.7 ? cleaners[Math.floor(Math.random() * cleaners.length)] : '';
                     
                     // チェックイン・アウト時刻をランダムに設定
-                    const earlyCheckIn = Math.random() < 0.2;
-                    const lateCheckOut = Math.random() < 0.3;
+                    let earlyCheckIn, lateCheckOut;
+                    
+                    if (hotelType === 'small') {
+                        // 小規模ホテル：プロトタイプ用に固定部屋を設定
+                        earlyCheckIn = fixedEarlyRooms.includes(roomNumber);
+                        lateCheckOut = fixedLateRooms.includes(roomNumber);
+                        
+                        // 固定でない部屋は通常の確率
+                        if (!earlyCheckIn && !lateCheckOut) {
+                            earlyCheckIn = Math.random() < 0.04; // 約3-5％の中央値4%
+                            lateCheckOut = Math.random() < 0.10;  // 約8-12％の中央値10%
+                        }
+                    } else {
+                        // 中・大規模ホテル：通常の確率
+                        earlyCheckIn = Math.random() < 0.04; // 約3-5％の中央値4%
+                        lateCheckOut = Math.random() < 0.10;  // 約8-12％の中央値10%
+                    }
+                    
                     let checkInTime = '', checkOutTime = '';
                     
-                    if (roomStatus === 'イン前' || roomStatus === '滞在中') {
+                    // アーリーチェックインがある場合は時刻を設定
+                    // DDの場合（連泊）はイン時間は前日以前なので「-」とする
+                    if (cleaningStatus !== 'DD' && (earlyCheckIn || roomStatus === 'イン前' || roomStatus === '滞在中')) {
                         checkInTime = earlyCheckIn ? '13:00' : '15:00';
                     }
-                    if (roomStatus === 'アウト済' || roomStatus === '滞在中') {
+                    
+                    // レイトチェックアウトがある場合は時刻を設定
+                    if (lateCheckOut || roomStatus === 'アウト済' || roomStatus === '滞在中') {
                         const hours = lateCheckOut ? 12 : Math.floor(Math.random() * 3) + 9;
                         const minutes = Math.floor(Math.random() * 6) * 10;
                         checkOutTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
@@ -2469,25 +2510,38 @@
             
             const timeDisplayItems = [];
             
-            // イン表示
-            const hasCheckIn = room.checkInTime && (room.roomStatus === 'イン前' || room.roomStatus === 'アウト済');
-            const earlyTag = room.earlyCheckIn ? '<span class="room-tag tag-blue">アーリー</span>' : '';
-            const checkInTime = hasCheckIn ? room.checkInTime : '-';
-            timeDisplayItems.push(`<div class="time-display-row">
-                <div class="time-tag-col">${earlyTag}</div>
-                <div class="time-label-col">イン:</div>
-                <div class="time-value-col">${checkInTime}</div>
-            </div>`);
+            // イン表示の判定
+            const shouldShowCheckIn = !(
+                room.roomStatus === 'アウト済' || // アウト済はイン表示不要
+                (room.roomStatus === '滞在中' && room.cleaningStatus === '清掃済') || // 滞在中で清掃済はイン表示不要
+                room.roomStatus === 'イン前' // イン前はアウト翌日なのでイン表示不要
+            );
             
-            // アウト表示
-            const hasCheckOut = room.checkOutTime && (room.roomStatus === 'アウト済' || room.roomStatus === '滞在中' || room.roomStatus === 'イン前');
-            const lateTag = room.lateCheckOut ? '<span class="room-tag tag-purple">レイト</span>' : '';
-            const checkOutTime = hasCheckOut ? room.checkOutTime : '-';
-            timeDisplayItems.push(`<div class="time-display-row">
-                <div class="time-tag-col">${lateTag}</div>
-                <div class="time-label-col">アウト:</div>
-                <div class="time-value-col">${checkOutTime}</div>
-            </div>`);
+            if (shouldShowCheckIn) {
+                const earlyTag = room.earlyCheckIn ? '<span class="room-tag tag-blue">アーリー</span>' : '';
+                const checkInTime = room.checkInTime || '-';
+                timeDisplayItems.push(`<div class="time-display-row">
+                    <div class="time-tag-col">${earlyTag}</div>
+                    <div class="time-label-col">イン:</div>
+                    <div class="time-value-col">${checkInTime}</div>
+                </div>`);
+            }
+            
+            // アウト表示の判定
+            const shouldShowCheckOut = !(
+                room.roomStatus === 'イン前' || // イン前はアウト翌日なので表示不要
+                (room.roomStatus === '滞在中' && room.cleaningStatus === '清掃済') // 滞在中で清掃済はアウト表示不要
+            );
+            
+            if (shouldShowCheckOut) {
+                const lateTag = room.lateCheckOut ? '<span class="room-tag tag-purple">レイト</span>' : '';
+                const checkOutTime = room.checkOutTime || '-';
+                timeDisplayItems.push(`<div class="time-display-row">
+                    <div class="time-tag-col">${lateTag}</div>
+                    <div class="time-label-col">アウト:</div>
+                    <div class="time-value-col">${checkOutTime}</div>
+                </div>`);
+            }
             
             return `<div class="time-display">${timeDisplayItems.join('')}</div>`;
         }
@@ -2671,7 +2725,7 @@
                 '未清掃': 'active-red',
                 '清掃済': 'active-green',
                 '点検済': 'active-blue',
-                'DD': 'active-purple',
+                'DD': 'active-gray',  // DDも清掃不要と同様に薄いグレーで統一
                 '清掃不要': 'active-gray',
                 'early': 'active-blue',
                 'late': 'active-purple'
